@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\IT\\stuffs\\javas\\shascam\\shascam.csproj": {}
+    "C:\\IT\\stuffs\\javas\\shascam\\shascam.csproj": {}
   },
   "projects": {
-    "c:\\IT\\stuffs\\javas\\shascam\\shascam.csproj": {
+    "C:\\IT\\stuffs\\javas\\shascam\\shascam.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\IT\\stuffs\\javas\\shascam\\shascam.csproj",
+        "projectUniqueName": "C:\\IT\\stuffs\\javas\\shascam\\shascam.csproj",
         "projectName": "shascam",
-        "projectPath": "c:\\IT\\stuffs\\javas\\shascam\\shascam.csproj",
+        "projectPath": "C:\\IT\\stuffs\\javas\\shascam\\shascam.csproj",
         "packagesPath": "C:\\Users\\Diogenes of Sinope\\.nuget\\packages\\",
-        "outputPath": "c:\\IT\\stuffs\\javas\\shascam\\obj\\",
+        "outputPath": "C:\\IT\\stuffs\\javas\\shascam\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Diogenes of Sinope\\AppData\\Roaming\\NuGet\\NuGet.Config",

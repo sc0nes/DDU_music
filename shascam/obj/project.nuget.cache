@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "FCLxSx7yAnc=",
+  "dgSpecHash": "dP3ctvyYADo=",
   "success": true,
-  "projectFilePath": "c:\\IT\\stuffs\\javas\\shascam\\shascam.csproj",
+  "projectFilePath": "C:\\IT\\stuffs\\javas\\shascam\\shascam.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Diogenes of Sinope\\.nuget\\packages\\ffmpegcore\\5.2.0\\ffmpegcore.5.2.0.nupkg.sha512",
     "C:\\Users\\Diogenes of Sinope\\.nuget\\packages\\instances\\3.0.1\\instances.3.0.1.nupkg.sha512",

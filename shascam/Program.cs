@@ -3,19 +3,28 @@ using System.Runtime.CompilerServices;
 using FFMpegCore.Arguments;
 using NAudio.Wave;
 using shascam.AudioProcessor;
+using System.IO;
+using System;
 
-Console.WriteLine("Hello, World!");
+//Console.WriteLine("Hello, ");
 
-class Main
+class Programio
 {
-    private static bool running = true;
+    //private static bool running = true;
     private static MemoryStream recordedStream = new MemoryStream();
-    static void main(string[] args)
+    static void Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
+        Console.WriteLine("Hello, Sha-scammers!");
 
         // generelle kodestruktur her følger https://www.royvanrijn.com/blog/2010/06/creating-shazam-in-java/
         string filePath = "C:\\IT\\stuffs\\javas\\shascam\\test.mp3";
+        if (!File.Exists(filePath))
+        {
+            Console.WriteLine("File not found: " + filePath);
+            return;
+        }
+        Console.WriteLine($"File: {filePath}");
+        
         string wavPath = filePath + ".wav";
         var ap = new AudioProcessor();
         
@@ -25,6 +34,10 @@ class Main
         int totalSamples = (int)(reader.Length / (reader.WaveFormat.BitsPerSample/8));
 
         WaveFormat format = GetFormat();
+        Console.WriteLine($"Sample rate: {reader.WaveFormat.SampleRate}, " +
+                            $"Channels: {reader.WaveFormat.Channels}, " +
+                            $"BitsPerSample: {reader.WaveFormat.BitsPerSample}");
+
         var waveIn = new WaveInEvent { WaveFormat = format, BufferMilliseconds = 100 };
         waveIn.StartRecording();
 
@@ -43,7 +56,6 @@ class Main
 
     static void  DataAvailable(object sender, WaveInEventArgs e) // this function was taken from https://markheath.net/post/how-to-record-and-play-audio-at-same
     {
-        if (DataAvailable == null) return;
         recordedStream.Write(e.Buffer, 0, e.BytesRecorded);
     }
 
