@@ -1,14 +1,14 @@
 ﻿namespace shascam.Algorithm;
 
-using MathNet;
+using MathNet.Numerics.IntegralTransforms;
 using System;
 
-public class Class1
+public class Algorithm
 {
     //40-80, 80-120, 120-180, 180-300.
     public static readonly int upperLimit = 300;
     public static readonly int[]  RANGE = new int[]{ 40, 80, 120, 180, upperLimit+1 };
-
+    
     public static void shascam(int[] results)
     {
         string path = "log.txt";
