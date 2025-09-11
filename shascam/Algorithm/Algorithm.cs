@@ -9,6 +9,9 @@ public class Algorithm
     public static readonly int upperLimit = 300;
     public static readonly int[]  RANGE = new int[]{ 40, 80, 120, 180, upperLimit+1 };
     
+    
+
+    
     public static void shascam(int[] results)
     {
         string path = "log.txt";
@@ -27,7 +30,7 @@ public class Algorithm
         File.AppendAllText(path,
         $"High Notes: {string.Join(", ", highNotes.Item1)} | {string.Join(", ", highNotes.Item2)}");
         File.AppendAllText(path, "End\n");
-        
+
 
         //return results;
     }
