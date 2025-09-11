@@ -5,7 +5,14 @@ using NAudio.Wave;
 
 public class AudioProcessor
 {
-    public void ConvertToWav(string inputPath, string outputPath) =>
+    public void ConvertToWav(string inputPath, string outputPath)
+    {
+        var ffmpegFolder = @"ffmpeg-2025-09-08-git-45db6945e9-essentials_build\bin";
+        var oldPath = Environment.GetEnvironmentVariable("PATH") ?? "";
+        if (!oldPath.Split(Path.PathSeparator).Contains(ffmpegFolder, StringComparer.OrdinalIgnoreCase))
+        {
+            Environment.SetEnvironmentVariable("PATH", ffmpegFolder + Path.PathSeparator + oldPath);
+        }
         // Use FFMpeg to convert mp3 to wav
         FFMpegArguments
             .FromFileInput(inputPath)
@@ -13,6 +20,8 @@ public class AudioProcessor
                 .WithAudioCodec("pcm_s16le")
                 .WithAudioSamplingRate(44100))
             .ProcessSynchronously();
+            
+    }
 
     public float[] LoadWavSamples(string wavPath)
     {

@@ -17,21 +17,15 @@ class Programio
         Console.WriteLine("Hello, Sha-scammers!");
 
         // generelle kodestruktur her følger https://www.royvanrijn.com/blog/2010/06/creating-shazam-in-java/
-        string filePath = "C:\\IT\\stuffs\\javas\\shascam\\test.mp3";
-        if (!File.Exists(filePath))
+        string filePath;
+        bool flowControl = InputfileHandler(out filePath);
+        if (!flowControl)
         {
-            Console.WriteLine("File not found: " + filePath);
             return;
         }
-        Console.WriteLine($"File: {filePath}");
-        
-        string wavPath = filePath + ".wav";
-        var ap = new AudioProcessor();
-        
-        ap.ConvertToWav(filePath, wavPath);
 
         var reader = new AudioFileReader(filePath);
-        int totalSamples = (int)(reader.Length / (reader.WaveFormat.BitsPerSample/8));
+        int totalSamples = (int)(reader.Length / (reader.WaveFormat.BitsPerSample / 8));
 
         WaveFormat format = GetFormat();
         Console.WriteLine($"Sample rate: {reader.WaveFormat.SampleRate}, " +
@@ -46,6 +40,30 @@ class Programio
 
 
     }
+
+    private static bool InputfileHandler(out string filePath)
+    {
+        filePath = "test.wav";
+        if (!File.Exists(filePath))
+        {
+            filePath = "test.mp3";
+            if (!File.Exists(filePath)) return false;
+            var ap = new AudioProcessor();
+            string wavPath = filePath + ".wav";
+            ap.ConvertToWav(filePath, wavPath);
+            Console.WriteLine("File not found: " + filePath);
+        }
+        if (!File.Exists(filePath))
+        {
+            filePath = "test.wav";
+            Console.WriteLine("File not found: " + filePath);
+            return false;
+        }
+        Console.WriteLine($"File: {filePath}");
+        
+        return true;
+    }
+
     static WaveFormat GetFormat()
     {
     int sampleRate = 44100;
