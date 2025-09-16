@@ -12,7 +12,7 @@ public class Algorithm
     
 
     
-    public static void shascam(int[] FFTresults)
+    public static void shascam(float[] FFTresults)
     {
         string path = "log.txt";
         File.AppendAllText(path, "Start\n");
@@ -35,7 +35,7 @@ public class Algorithm
         //return results;
     }
 
-    private static (double[], int[]) FingerprintLoudestFreq(int[] FFTresults, int low_limit, int high_limit)
+    private static (double[], int[]) FingerprintLoudestFreq(float[] FFTresults, int low_limit, int high_limit)
     {
         double[] highscores = new double[high_limit - low_limit];
         int[] recordPoints = new int[high_limit - low_limit];
