@@ -12,15 +12,15 @@ public class Algorithm
     
 
     
-    public static void shascam(int[] results)
+    public static void shascam(int[] FFTresults)
     {
         string path = "log.txt";
         File.AppendAllText(path, "Start\n");
         //indexes the highest magnitudes at different frequencies.
-        (double[], int[]) bassNotes = FingerprintLoudestFreq(results, RANGE[0], RANGE[1]);
-        (double[], int[]) midNotes1 = FingerprintLoudestFreq(results, RANGE[1], RANGE[2]);
-        (double[], int[]) midNotes2 = FingerprintLoudestFreq(results, RANGE[2], RANGE[3]);
-        (double[], int[]) highNotes = FingerprintLoudestFreq(results, RANGE[3], RANGE[4]);
+        (double[], int[]) bassNotes = FingerprintLoudestFreq(FFTresults, RANGE[0], RANGE[1]);
+        (double[], int[]) midNotes1 = FingerprintLoudestFreq(FFTresults, RANGE[1], RANGE[2]);
+        (double[], int[]) midNotes2 = FingerprintLoudestFreq(FFTresults, RANGE[2], RANGE[3]);
+        (double[], int[]) highNotes = FingerprintLoudestFreq(FFTresults, RANGE[3], RANGE[4]);
         File.AppendAllText(path,
         $"Bass Notes: {string.Join(", ", bassNotes.Item1)} | {string.Join(", ", bassNotes.Item2)}");
         File.AppendAllText(path,
@@ -35,7 +35,7 @@ public class Algorithm
         //return results;
     }
 
-    private static (double[], int[]) FingerprintLoudestFreq(int[] results, int low_limit, int high_limit)
+    private static (double[], int[]) FingerprintLoudestFreq(int[] FFTresults, int low_limit, int high_limit)
     {
         double[] highscores = new double[high_limit - low_limit];
         int[] recordPoints = new int[high_limit - low_limit];
@@ -43,7 +43,7 @@ public class Algorithm
         for (int freq = low_limit; freq < high_limit - 1; freq++)
         {
             //Get the magnitude:
-            double mag = Math.Log(Math.Abs(results[freq]) + 1);
+            double mag = Math.Log(Math.Abs(FFTresults[freq]) + 1);
 
             //Find out which range we are in:
             int index = GetIndex(freq);
