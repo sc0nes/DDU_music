@@ -28,7 +28,7 @@ class Programio
 
         //sampling
         float[] samples = shascam.FileHandler.LoadWav(filePath);
-        //Array.ForEach(samples, Console.WriteLine);
+        //Array.ForEach(samples, Console.WriteLine); // https://www.reddit.com/r/csharp/comments/11vb5fq/the_kool_kidz_way_of_printing_an_array/
 
         int windowSize = 2048;
 
