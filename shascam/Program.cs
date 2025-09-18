@@ -38,7 +38,7 @@ class Programio
             var complex = new System.Numerics.Complex[windowSize];
             for (int i = 0; i < windowSize; i++)
             {
-                window[i] = samples[offset + i];git add SongDatabase.db
+                window[i] = samples[offset + i];
                 complex[i] = new System.Numerics.Complex(window[i], 0);
             }
             Fourier.Forward(complex, FourierOptions.Matlab);
