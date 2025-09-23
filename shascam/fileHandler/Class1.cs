@@ -7,13 +7,14 @@ using shascam.AudioProcessor;
 
 public class FileHandler
 {
+    public static int sampleRate = int.MinValue;
     public static bool FindCorrectPath(out string filePath)
     {
         //filePath = "test";
-        filePath = "test2.wav";
+        filePath = "test.wav";
         if (!File.Exists(filePath))
         {
-            filePath = "test2.mp3";
+            filePath = "test.mp3";
             if (!File.Exists(filePath)) return false;
             var ap = new AudioProcessor.AudioProcessor();
             string wavPath = filePath + ".wav";
@@ -22,12 +23,12 @@ public class FileHandler
         }
         if (!File.Exists(filePath))
         {
-            filePath = "test2.wav";
+            filePath = "test.wav";
             Console.WriteLine("File not found: " + filePath);
             return false;
         }
         Console.WriteLine($"File: {filePath}");
-        
+
         return true;
     }
     public static float[] LoadWav(string path)
@@ -41,8 +42,10 @@ public class FileHandler
         WaveFormat format = GetFormat();
         Console.WriteLine($"Sample rate: {reader.WaveFormat.SampleRate}, " +
                             $"Channels: {reader.WaveFormat.Channels}, " +
-                            $"BitsPerSample: {reader.WaveFormat.BitsPerSample}");
-
+                            $"BitsPerSample: {reader.WaveFormat.BitsPerSample}, " +
+                            $"Duration: {reader.TotalTime}, " +
+                            $"Volume: {reader.Volume}" );
+        sampleRate = reader.WaveFormat.SampleRate;
         return samples;
     }
 
