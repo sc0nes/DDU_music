@@ -9,20 +9,20 @@ public class Algorithm
     public static readonly int upperLimit = 300;
     public static readonly int[]  RANGE = new int[]{ 40, 80, 120, 180, upperLimit+1 };
 
-
-
     public static long shascam(double[] FFTresults)
     {
         string path = "log.txt";
 
         File.AppendAllText(path, "Start\n");
         //indexes the highest magnitudes at different frequencies.
+
         (double, int) bassNotes = FingerprintLoudestFreq(FFTresults, RANGE[0], RANGE[1]);
         (double, int) midNotes1 = FingerprintLoudestFreq(FFTresults, RANGE[1], RANGE[2]);
         (double, int) midNotes2 = FingerprintLoudestFreq(FFTresults, RANGE[2], RANGE[3]);
         (double, int) highNotes = FingerprintLoudestFreq(FFTresults, RANGE[3], RANGE[4]);
 
         
+
 
         File.AppendAllText(path,
         $"Bass Notes: {string.Join(", ", bassNotes.Item1)} \n |//| {string.Join(", ", bassNotes.Item2)} \n");
@@ -43,6 +43,7 @@ public class Algorithm
     
     private static readonly int FUZ_FACTOR = 2;
     private static long hash(String line) { // found from the java implementation
+
         String[] p = line.Split("\t");
         long p1 = long.Parse(p[0]);
         long p2 = long.Parse(p[1]);
@@ -53,6 +54,9 @@ public class Algorithm
           + (p2 - (p2 % FUZ_FACTOR)) * (1L<<16)      //2^16	
            + (p1 - (p1 % FUZ_FACTOR));              //2^0
     }
+
+
+    
 
     private static (double, int) FingerprintLoudestFreq(double[] FFTresults, int low_limit, int high_limit)
     {

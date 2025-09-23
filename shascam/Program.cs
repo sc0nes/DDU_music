@@ -58,7 +58,7 @@ class Programio
             }
 
             long hash = Algorithm.shascam(ampl);
-            Array.ForEach(ampl, Console.WriteLine);
+            //Array.ForEach(ampl, Console.WriteLine);
 
             //PrintBytes(offset, hash);
 

@@ -11,10 +11,11 @@ public class FileHandler
     public static bool FindCorrectPath(out string filePath)
     {
         //filePath = "test";
-        filePath = "test.wav";
+
+        filePath = "test2.wav";
         if (!File.Exists(filePath))
         {
-            filePath = "test.mp3";
+            filePath = "test2.mp3";
             if (!File.Exists(filePath)) return false;
             var ap = new AudioProcessor.AudioProcessor();
             string wavPath = filePath + ".wav";
@@ -23,7 +24,7 @@ public class FileHandler
         }
         if (!File.Exists(filePath))
         {
-            filePath = "test.wav";
+            filePath = "test2.wav";
             Console.WriteLine("File not found: " + filePath);
             return false;
         }
