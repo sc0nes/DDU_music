@@ -705,8 +705,8 @@ PlayerSettings:
   apiCompatibilityLevelPerPlatform: {}
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: DDU_music_program
-  metroPackageVersion: 
+  metroPackageName: DDUmusicprogram
+  metroPackageVersion: 1.0.0.0
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
@@ -714,7 +714,7 @@ PlayerSettings:
   metroCertificateNotAfter: 0000000000000000
   metroApplicationDescription: DDU_music_program
   wsaImages: {}
-  metroTileShortName: 
+  metroTileShortName: DDU_music_program
   metroTileShowName: 0
   metroMediumTileShowName: 0
   metroLargeTileShowName: 0

@@ -8,7 +8,10 @@ using System;
 using MathNet.Numerics.IntegralTransforms;
 using NAudio.Dsp;
 using shascam.Algorithm;
+
 using System.Data.SqlTypes;
+using shascam.DatabaseManagers;
+
 //Console.WriteLine("Hello, ");
 
 class Programio
@@ -21,8 +24,9 @@ class Programio
     static void Main(string[] args)
     {
         Console.WriteLine("Hello, Sha-scammers!");
+        DataBaseManager.Test();
 
-        // generelle kodestruktur her følger https://www.royvanrijn.com/blog/2010/06/creating-shazam-in-java/
+       // generelle kodestruktur her følger https://www.royvanrijn.com/blog/2010/06/creating-shazam-in-java/
         string filePath;
         bool flowControl = shascam.FileHandler.FindCorrectPath(out filePath);
         if (!flowControl)
@@ -57,6 +61,7 @@ class Programio
             Array.ForEach(ampl, Console.WriteLine);
 
             //PrintBytes(offset, hash);
+
 
         }
 
