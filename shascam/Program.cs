@@ -20,7 +20,6 @@ class Programio
     public static readonly int windowSize = 4096;
 
     //private static bool running = true;
-    private static MemoryStream recordedStream = new MemoryStream();
     static void Main(string[] args)
     {
         Console.WriteLine("Hello, Sha-scammers!");
