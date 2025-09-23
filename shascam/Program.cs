@@ -8,17 +8,24 @@ using System;
 using MathNet.Numerics.IntegralTransforms;
 using NAudio.Dsp;
 using shascam.Algorithm;
+
+using System.Data.SqlTypes;
+using shascam.DatabaseManagers;
+
 //Console.WriteLine("Hello, ");
 
 class Programio
 {
+    //public static readonly int windowSize = 1028;
+    public static readonly int windowSize = 4096;
+
     //private static bool running = true;
-    private static MemoryStream recordedStream = new MemoryStream();
     static void Main(string[] args)
     {
         Console.WriteLine("Hello, Sha-scammers!");
+        DataBaseManager.Test();
 
-        // generelle kodestruktur her følger https://www.royvanrijn.com/blog/2010/06/creating-shazam-in-java/
+       // generelle kodestruktur her følger https://www.royvanrijn.com/blog/2010/06/creating-shazam-in-java/
         string filePath;
         bool flowControl = shascam.FileHandler.FindCorrectPath(out filePath);
         if (!flowControl)
@@ -30,8 +37,8 @@ class Programio
         float[] samples = shascam.FileHandler.LoadWav(filePath);
         //Array.ForEach(samples, Console.WriteLine); // https://www.reddit.com/r/csharp/comments/11vb5fq/the_kool_kidz_way_of_printing_an_array/
 
-        int windowSize = 2048;
-
+        
+        
         for (int offset = 0; offset < samples.Length - windowSize; offset += windowSize) // probably buggy
         {
             double[] window = new double[windowSize];
@@ -42,24 +49,34 @@ class Programio
                 complex[i] = new System.Numerics.Complex(window[i], 0);
             }
             Fourier.Forward(complex, FourierOptions.Matlab);
-        
-            float[] ampl = new float[windowSize / 2]; // half become imaginary, we only want the reals
+
+            double[] ampl = new double[windowSize / 2]; // half become imaginary, we only want the reals
             for (int i = 0; i < windowSize / 2; i++)
             {
-                ampl[i] = (float)complex[i].Magnitude;
+                ampl[i] = complex[i].Magnitude;
             }
-            Array.ForEach(ampl, Console.WriteLine);
 
-            Algorithm.shascam(ampl);
+            long hash = Algorithm.shascam(ampl);
+            //Array.ForEach(ampl, Console.WriteLine);
 
-            //Algorithm.shascam(magnitudes);
+            //PrintBytes(offset, hash);
 
 
+        }
 
-            }
 
     }
 
-    
+    private static void PrintBytes(int offset, long hash)
+    {
+        byte[] bytes = BitConverter.GetBytes(hash);
+
+        foreach (byte b in bytes)
+        {
+            Console.WriteLine((int)b);
+        }
+        Console.WriteLine("/offset/" + offset/4096);
+    }
+
 
 }

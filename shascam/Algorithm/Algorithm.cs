@@ -9,23 +9,20 @@ public class Algorithm
     public static readonly int upperLimit = 300;
     public static readonly int[]  RANGE = new int[]{ 40, 80, 120, 180, upperLimit+1 };
 
-
-    
-    public static void shascam(float[] FFTresults)
+    public static long shascam(double[] FFTresults)
     {
         string path = "log.txt";
+
         File.AppendAllText(path, "Start\n");
         //indexes the highest magnitudes at different frequencies.
-        (double[], int[]) bassNotes = FingerprintLoudestFreq(FFTresults, RANGE[0], RANGE[1]);
-        (double[], int[]) midNotes1 = FingerprintLoudestFreq(FFTresults, RANGE[1], RANGE[2]);
-        (double[], int[]) midNotes2 = FingerprintLoudestFreq(FFTresults, RANGE[2], RANGE[3]);
-        (double[], int[]) highNotes = FingerprintLoudestFreq(FFTresults, RANGE[3], RANGE[4]);
 
-        (double[], int[])[] results = new (double[], int[])[4];
-        results[0] = bassNotes;
-        results[1] = midNotes1;
-        results[2] = midNotes2;
-        results[3] = highNotes;
+        (double, int) bassNotes = FingerprintLoudestFreq(FFTresults, RANGE[0], RANGE[1]);
+        (double, int) midNotes1 = FingerprintLoudestFreq(FFTresults, RANGE[1], RANGE[2]);
+        (double, int) midNotes2 = FingerprintLoudestFreq(FFTresults, RANGE[2], RANGE[3]);
+        (double, int) highNotes = FingerprintLoudestFreq(FFTresults, RANGE[3], RANGE[4]);
+
+        
+
 
         File.AppendAllText(path,
         $"Bass Notes: {string.Join(", ", bassNotes.Item1)} \n |//| {string.Join(", ", bassNotes.Item2)} \n");
@@ -37,42 +34,53 @@ public class Algorithm
         $"High Notes: {string.Join(", ", highNotes.Item1)} \n |//| {string.Join(", ", highNotes.Item2)} \n");
         File.AppendAllText(path, "End\n");
 
-
+        
+        string line = $"{bassNotes.Item2}\t{midNotes1.Item2}\t{midNotes2.Item2}\t{highNotes.Item2}";
+        return hash(line);
         //return results;
     }
 
     
     private static readonly int FUZ_FACTOR = 2;
-    private long hash(String line) { // found from the java implementation
+    private static long hash(String line) { // found from the java implementation
+
         String[] p = line.Split("\t");
         long p1 = long.Parse(p[0]);
         long p2 = long.Parse(p[1]);
         long p3 = long.Parse(p[2]);
         long p4 = long.Parse(p[3]);
-        return  (p4-(p4%FUZ_FACTOR)) * 100000000 + (p3-(p3%FUZ_FACTOR)) * 100000 + (p2-(p2%FUZ_FACTOR)) * 100 + (p1-(p1%FUZ_FACTOR));
+        return  (p4 - (p4 % FUZ_FACTOR)) * (1L<<48)  //2^48
+         + (p3 - (p3 % FUZ_FACTOR)) * (1L<<32)       //2^32
+          + (p2 - (p2 % FUZ_FACTOR)) * (1L<<16)      //2^16	
+           + (p1 - (p1 % FUZ_FACTOR));              //2^0
     }
 
-    private static (double[], int[]) FingerprintLoudestFreq(float[] FFTresults, int low_limit, int high_limit)
-    {
-        double[] highscores = new double[high_limit - low_limit];
-        int[] recordPoints = new int[high_limit - low_limit];
 
-        for (int freq = low_limit; freq < high_limit - 1; freq++)
+    
+
+    private static (double, int) FingerprintLoudestFreq(double[] FFTresults, int low_limit, int high_limit)
+    {
+        double highMag = double.NegativeInfinity;
+        int highMagIndex = low_limit;
+
+
+        for (int freq = low_limit; freq < high_limit; freq++)
         {
             //Get the magnitude:
             double mag = Math.Log(Math.Abs(FFTresults[freq]) + 1);
-
-            //Find out which range we are in:
+            //double mag = FFTresults[freq];
             int index = GetIndex(freq);
 
             //Save the highest magnitude and corresponding frequency:
-            if (mag > highscores[index])
+            if (mag > highMag)
             {
-                highscores[index] = mag;
-                recordPoints[index] = freq;
+                highMag = mag;
+                highMagIndex = freq;
             }
         }
-        return (highscores, recordPoints);
+        
+
+        return (highMag, highMagIndex);
     }
     private static int GetIndex(int freq)
     {
