@@ -1,148 +1,84 @@
-﻿/*********************************************************************
- * AutoRecorderButton – optagning ved hold‑ned‑knap
- *
- *   • Hold knappen (UI‑Button / tast) nede → optagning starter.
- *   • Slip knappen → optagning stopper og gemmes.
- *   • Max. kliplængde 3599 sekunder.
- *   • UI‑status‑tekst (Text eller TextMeshPro) viser Lytter / Optager /
- *     Stoppet / Fil‑sti.
- *********************************************************************/
-
-using System.Collections;
+﻿using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using System.IO;
-using UnityEngine;
-using UnityEngine.UI;                       // UI‑Text
-#if TMP_PRESENT
-using TMPro;                                 // TextMeshPro (valgfrit)
-#endif
-using UnityEngine.EventSystems;             // IPointerDownHandler / IPointerUpHandler
 
 #if UNITY_ANDROID
 using UnityEngine.Android;
 #endif
 
-public class AutoRecorderButton : MonoBehaviour,
-                                   IPointerDownHandler,
-                                   IPointerUpHandler
+public class SaveSongs : MonoBehaviour
 {
-    // -----------------------------------------------------------------
-    // 0️⃣ UI – status‑tekst (drag & drop i Inspector)
-    // -----------------------------------------------------------------
-    [Header("UI")]
-    // public TMP_Text statusText;   // <-- brug denne, hvis du har TextMeshPro
-    public Text statusText;          // <-- brug denne, hvis du bruger UI‑Text
+    [Header("UI")] public Text statusText;   // <- træk dit tekst‑objekt ind
 
-    // -----------------------------------------------------------------
-    // 1️⃣ Indstillinger
-    // -----------------------------------------------------------------
-    [Header("Optagelses‑indstillinger")]
-    [Tooltip("Sample‑rate – 44100 er standard")]
     public int sampleRate = 44100;
+    public int maxLengthSec = 3599;
 
-    [Tooltip("Maks. varighed i sekunder (≤ 3599)")]
-    public int maxLengthSec = 3599;   // 3599 sek ≈ 1 t – 0 min – 1 sek
-
-    // -----------------------------------------------------------------
-    // 2️⃣ Interne felter
-    // -----------------------------------------------------------------
-    private AudioClip micClip;          // den aktuelle optagelse
+    private AudioClip micClip;
     private bool isRecording = false;
 
     // -----------------------------------------------------------------
-    // 3️⃣ Unity‑livscyklus
+    // Metoder som kan kaldes fra Unity‑Event (OnClick, EventTrigger osv.)
     // -----------------------------------------------------------------
-    private void Start()
+    public void StartRecording()   // kan tilknyttes til PointerDown
     {
-#if UNITY_ANDROID
-        // Mikrofon‑tilladelse på Android
-        if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
-            Permission.RequestUserPermission(Permission.Microphone);
-#endif
-        // Vi er i “vent‑på‑knap‑ned”‑tilstand
-        SetStatus("Vent på knap‑ned‑tryk …");
-    }
-
-    // -----------------------------------------------------------------
-    // 4️⃣ Knap‑ned‑event – starter optagelse
-    // -----------------------------------------------------------------
-    public void OnPointerDown(PointerEventData eventData)
-    {
-        // Undgå dobbelt‑start
         if (isRecording) return;
-
-        // Start en ny optagelse (ingen loop‑buffer)
         micClip = Microphone.Start(null, false, maxLengthSec, sampleRate);
         isRecording = true;
         SetStatus("Optager …");
-        Debug.Log("[AutoRecorderButton] Optagelse startet (hold nede).");
+        Debug.Log("[SaveSongs] Optagelse startet.");
     }
 
-    // -----------------------------------------------------------------
-    // 5️⃣ Knap‑op‑event – stopper optagelse + gemmer
-    // -----------------------------------------------------------------
-    public void OnPointerUp(PointerEventData eventData)
+    public void StopRecording()    // kan tilknyttes til PointerUp
     {
-        if (!isRecording) return;               // intet at stoppe
-
-        // Hent den aktuelle position *før* vi slutter med Microphone
+        if (!isRecording) return;
         int endPos = Microphone.GetPosition(null);
         Microphone.End(null);
         isRecording = false;
 
         SetStatus("Optagelse stoppet – gemmer …");
-        Debug.Log("[AutoRecorderButton] Optagelse stoppet, gemmer…");
-
-        SaveClip(endPos);                       // gem filen
+        Debug.Log("[SaveSongs] Optagelse stoppet, gemmer.");
+        SaveClip(endPos);
     }
 
     // -----------------------------------------------------------------
-    // 6️⃣ Gem filen (WAV)
+    // De originale IPointer…‑metoder – kan blot kalde ovenstående
     // -----------------------------------------------------------------
-    private void SaveClip(int endPos)
-    {
-        if (endPos <= 0)
-        {
-            SetStatus("Ingen data – intet gemt.");
-            Debug.LogWarning("[AutoRecorderButton] EndPos = 0 – intet at gemme.");
-            return;
-        }
-
-        // Hent samples fra start (0) til endPos
-        float[] wavData = new float[endPos * micClip.channels];
-        micClip.GetData(wavData, 0);
-
-        // Opret en præcis AudioClip, så filen kun indeholder den optagede del
-        AudioClip finalClip = AudioClip.Create("record", endPos,
-                                               micClip.channels,
-                                               micClip.frequency,
-                                               false);
-        finalClip.SetData(wavData, 0);
-
-        // Mappe til persistent storage
-        string folder = Path.Combine(Application.persistentDataPath, "Recordings");
-        if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
-        string path = Path.Combine(folder, fileName);
-
-        // *** OBS! ***
-        // WavUtility er en ekstern helper‑klasse (se https://github.com/deadlyfingers/UnityWavUtility)
-        // Du skal have den i dit projekt, ellers kan du erstatte kaldet med dit eget WAV‑skriv/konverter.
-        WavUtility.Save(path, finalClip);
-
-        SetStatus($"Gemte til:\n{path}");
-        Debug.Log($"[AutoRecorderButton] Gemte til: {path}");
-    }
+    public void OnPointerDown(PointerEventData _) => StartRecording();
+    public void OnPointerUp(PointerEventData _) => StopRecording();
 
     // -----------------------------------------------------------------
-    // 7️⃣ Hjælpe‑metode – opdatér UI‑tekst
+    // Resten af scriptet er identisk med den version, du allerede har
     // -----------------------------------------------------------------
     private void SetStatus(string txt)
     {
         if (statusText != null) statusText.text = txt;
     }
 
-    // -----------------------------------------------------------------
-    // 8️⃣ Filnavn (kan eksponeres i Inspector, hvis du vil)
-    // -----------------------------------------------------------------
+    // ---------- Gemning (WavUtility skal være i projektet) ----------
     private const string fileName = "buttonRecord.wav";
+
+    private void SaveClip(int endPos)
+    {
+        if (endPos <= 0) { SetStatus("Ingen data – intet gemt."); return; }
+
+        float[] wav = new float[endPos * micClip.channels];
+        micClip.GetData(wav, 0);
+
+        AudioClip finalClip = AudioClip.Create("record", endPos,
+                                              micClip.channels,
+                                              micClip.frequency,
+                                              false);
+        finalClip.SetData(wav, 0);
+
+        string folder = Path.Combine(Application.persistentDataPath, "Recordings");
+        if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+        string path = Path.Combine(folder, fileName);
+
+        // ⚠️ WavUtility.cs skal ligge i Assets!
+        WavUtility.Save(path, finalClip);
+
+        SetStatus($"Gemte til:\n{path}");
+        Debug.Log($"[SaveSongs] Gemte til: {path}");
+    }
 }
