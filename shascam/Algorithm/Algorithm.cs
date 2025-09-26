@@ -5,15 +5,15 @@ using System;
 
 public class Algorithm
 {
-    //40-80, 80-120, 120-180, 180-300.
+    
     public static readonly int upperLimit = 300;
-    public static readonly int[]  RANGE = new int[]{ 40, 80, 120, 180, upperLimit+1 };
+    
+    //40-80, 80-120, 120-180, 180-300.
+    public static readonly int[] RANGE = new int[] { 40, 80, 120, 180, upperLimit };
 
     public static long shascam(double[] FFTresults)
     {
-        string path = "log.txt";
 
-        File.AppendAllText(path, "Start\n");
         //indexes the highest magnitudes at different frequencies.
 
         (double, int) bassNotes = FingerprintLoudestFreq(FFTresults, RANGE[0], RANGE[1]);
@@ -21,9 +21,19 @@ public class Algorithm
         (double, int) midNotes2 = FingerprintLoudestFreq(FFTresults, RANGE[2], RANGE[3]);
         (double, int) highNotes = FingerprintLoudestFreq(FFTresults, RANGE[3], RANGE[4]);
 
-        
 
 
+        string path = "log.txt";
+        WriteLog(bassNotes, midNotes1, midNotes2, highNotes, path);
+
+        string line = $"{bassNotes.Item2}\t{midNotes1.Item2}\t{midNotes2.Item2}\t{highNotes.Item2}";
+        return hash(line);
+        //return results;
+    }
+
+    private static void WriteLog((double, int) bassNotes, (double, int) midNotes1, (double, int) midNotes2, (double, int) highNotes, string path)
+    {
+        File.AppendAllText(path, "Start\n");
         File.AppendAllText(path,
         $"Bass Notes: {string.Join(", ", bassNotes.Item1)} \n |//| {string.Join(", ", bassNotes.Item2)} \n");
         File.AppendAllText(path,
@@ -33,17 +43,10 @@ public class Algorithm
         File.AppendAllText(path,
         $"High Notes: {string.Join(", ", highNotes.Item1)} \n |//| {string.Join(", ", highNotes.Item2)} \n");
         File.AppendAllText(path, "End\n");
-
-        
-        string line = $"{bassNotes.Item2}\t{midNotes1.Item2}\t{midNotes2.Item2}\t{highNotes.Item2}";
-        return hash(line);
-        //return results;
     }
 
-    
     private static readonly int FUZ_FACTOR = 2;
     private static long hash(String line) { // found from the java implementation
-
         String[] p = line.Split("\t");
         long p1 = long.Parse(p[0]);
         long p2 = long.Parse(p[1]);

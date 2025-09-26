@@ -26,8 +26,8 @@ class Programio
         DataBaseManager.Test();
 
        // generelle kodestruktur her følger https://www.royvanrijn.com/blog/2010/06/creating-shazam-in-java/
-        string filePath;
-        bool flowControl = shascam.FileHandler.FindCorrectPath(out filePath);
+        string filePath = "test.wav";
+        bool flowControl = shascam.FileHandler.FindCorrectPath(out filePath, filePath);
         if (!flowControl)
         {
             return;
