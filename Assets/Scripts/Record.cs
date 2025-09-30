@@ -1,84 +1,67 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using UnityEngine;
 
-#if UNITY_ANDROID
-using UnityEngine.Android;
-#endif
-
-public class SaveSongs : MonoBehaviour
+public class RecordAudio : MonoBehaviour
 {
-    [Header("UI")] public Text statusText;   // <- træk dit tekst‑objekt ind
+    private AudioClip recordedClip;
+    [SerializeField] AudioSource audioSource;
+    private string filePath = "recording.wav";
+    private string directoryPath = "Recordings";
+    private float startTime;
+    private float recordingLength;
 
-    public int sampleRate = 44100;
-    public int maxLengthSec = 3599;
-
-    private AudioClip micClip;
-    private bool isRecording = false;
-
-    // -----------------------------------------------------------------
-    // Metoder som kan kaldes fra Unity‑Event (OnClick, EventTrigger osv.)
-    // -----------------------------------------------------------------
-    public void StartRecording()   // kan tilknyttes til PointerDown
+    private void Awake()
     {
-        if (isRecording) return;
-        micClip = Microphone.Start(null, false, maxLengthSec, sampleRate);
-        isRecording = true;
-        SetStatus("Optager …");
-        Debug.Log("[SaveSongs] Optagelse startet.");
+        if (!Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
     }
 
-    public void StopRecording()    // kan tilknyttes til PointerUp
+    public void StartRecording()
     {
-        if (!isRecording) return;
-        int endPos = Microphone.GetPosition(null);
+        string device = Microphone.devices[0];
+        int sampleRate = 44100;
+        int lengthSec = 3599;
+
+        recordedClip = Microphone.Start(device, false, lengthSec, sampleRate);
+        startTime = Time.realtimeSinceStartup;
+    }
+
+    public void StopRecording()
+    {
         Microphone.End(null);
-        isRecording = false;
-
-        SetStatus("Optagelse stoppet – gemmer …");
-        Debug.Log("[SaveSongs] Optagelse stoppet, gemmer.");
-        SaveClip(endPos);
+        recordingLength = Time.realtimeSinceStartup - startTime;
+        recordedClip = TrimClip(recordedClip, recordingLength);
+        SaveRecording();
     }
 
-    // -----------------------------------------------------------------
-    // De originale IPointer…‑metoder – kan blot kalde ovenstående
-    // -----------------------------------------------------------------
-    public void OnPointerDown(PointerEventData _) => StartRecording();
-    public void OnPointerUp(PointerEventData _) => StopRecording();
-
-    // -----------------------------------------------------------------
-    // Resten af scriptet er identisk med den version, du allerede har
-    // -----------------------------------------------------------------
-    private void SetStatus(string txt)
+    public void SaveRecording()
     {
-        if (statusText != null) statusText.text = txt;
+        if (recordedClip != null)
+        {
+            filePath = Path.Combine(directoryPath, filePath);
+            WavUtility.Save(filePath, recordedClip);
+            Debug.Log("Recording saved as " + filePath);
+        }
+        else
+        {
+            Debug.LogError("No recording found to save.");
+        }
     }
 
-    // ---------- Gemning (WavUtility skal være i projektet) ----------
-    private const string fileName = "buttonRecord.wav";
-
-    private void SaveClip(int endPos)
+    private AudioClip TrimClip(AudioClip clip, float length)
     {
-        if (endPos <= 0) { SetStatus("Ingen data – intet gemt."); return; }
+        int samples = (int)(clip.frequency * length);
+        float[] data = new float[samples];
+        clip.GetData(data, 0);
 
-        float[] wav = new float[endPos * micClip.channels];
-        micClip.GetData(wav, 0);
+        AudioClip trimmedClip = AudioClip.Create(clip.name, samples,
+            clip.channels, clip.frequency, false);
+        trimmedClip.SetData(data, 0);
 
-        AudioClip finalClip = AudioClip.Create("record", endPos,
-                                              micClip.channels,
-                                              micClip.frequency,
-                                              false);
-        finalClip.SetData(wav, 0);
-
-        string folder = Path.Combine(Application.persistentDataPath, "Recordings");
-        if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-        string path = Path.Combine(folder, fileName);
-
-        // ⚠️ WavUtility.cs skal ligge i Assets!
-        WavUtility.Save(path, finalClip);
-
-        SetStatus($"Gemte til:\n{path}");
-        Debug.Log($"[SaveSongs] Gemte til: {path}");
+        return trimmedClip;
     }
 }
