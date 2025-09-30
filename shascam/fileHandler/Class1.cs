@@ -8,6 +8,23 @@ using shascam.AudioProcessor;
 public class FileHandler
 {
     //public static int sampleRate = int.MinValue;
+    public static float[][] LoadFilesForFolder(String Path)
+    {
+        var files = Directory.EnumerateFiles(Path, "*.mp3").ToList();
+        var samples = new List<float[]>();
+        foreach (var file in files)
+        {
+            string wavPath = file + ".wav";
+            if (!File.Exists(wavPath))
+            {
+                var ap = new AudioProcessor.AudioProcessor();
+                ap.ConvertToWav(file, wavPath);
+                samples.Add(LoadWav(wavPath));
+            }
+        }
+        return samples.ToArray();
+
+    }
     public static bool FindCorrectPath(out string filePath, string path)
     {
         //filePath = "test";

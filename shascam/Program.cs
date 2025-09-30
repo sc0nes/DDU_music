@@ -25,7 +25,7 @@ class Programio
         Console.WriteLine("Hello, Sha-scammers!");
         DataBaseManager.Test();
 
-       // generelle kodestruktur her følger https://www.royvanrijn.com/blog/2010/06/creating-shazam-in-java/
+        // generelle kodestruktur her følger https://www.royvanrijn.com/blog/2010/06/creating-shazam-in-java/
         string filePath = "test.wav";
         bool flowControl = shascam.FileHandler.FindCorrectPath(out filePath, filePath);
         if (!flowControl)
@@ -34,11 +34,22 @@ class Programio
         }
 
         //sampling
-        float[] samples = shascam.FileHandler.LoadWav(filePath);
-        //Array.ForEach(samples, Console.WriteLine); // https://www.reddit.com/r/csharp/comments/11vb5fq/the_kool_kidz_way_of_printing_an_array/
 
-        
-        
+        float[] samples = shascam.FileHandler.LoadWav(filePath);
+
+        //string pathy = "./whiteGirlbangers";
+        float[][] samples2 = shascam.FileHandler.LoadFilesForFolder(pathy);
+        //Array.ForEach(samples, Console.WriteLine); // https://www.reddit.com/r/csharp/comments/11vb5fq/the_kool_kidz_way_of_printing_an_array/
+        for(int i = 0; i < samples2.Length; i++)
+        {
+            WindowPartitioning(samples2[i]);
+        }
+        //WindowPartitioning(samples);
+
+    }
+
+    private static void WindowPartitioning(float[] samples)
+    {
         for (int offset = 0; offset < samples.Length - windowSize; offset += windowSize) // probably buggy
         {
             double[] window = new double[windowSize];
@@ -57,14 +68,7 @@ class Programio
             }
 
             long hash = Algorithm.shascam(ampl);
-            //Array.ForEach(ampl, Console.WriteLine);
-
-            //PrintBytes(offset, hash);
-
-
         }
-
-
     }
 
     private static void PrintBytes(int offset, long hash)
