@@ -11,6 +11,8 @@ using shascam.Algorithm;
 
 using System.Data.SqlTypes;
 using shascam.DatabaseManagers;
+using System.Diagnostics;
+using System.Data.SQLite;
 
 //Console.WriteLine("Hello, ");
 
@@ -24,23 +26,47 @@ class Programio
     {
         Console.WriteLine("Hello, Sha-scammers!");
         DataBaseManager.Test();
-
-       // generelle kodestruktur her følger https://www.royvanrijn.com/blog/2010/06/creating-shazam-in-java/
-        string filePath = "test.wav";
+        // generelle kodestruktur her følger https://www.royvanrijn.com/blog/2010/06/creating-shazam-in-java/
+        /*string filePath = "test.wav";
+        
         bool flowControl = shascam.FileHandler.FindCorrectPath(out filePath, filePath);
         if (!flowControl)
         {
             return;
+        }*/
+        //sampling
+        Console.WriteLine("22");
+        //float[] samples = shascam.FileHandler.LoadWav(filePath);
+        string pathy = "./White Girl Music";
+        (float[][], int[]) outp = shascam.FileHandler.LoadFolderForDB(pathy);
+        float[][] samples = outp.Item1;
+        int[] songID = outp.Item2;
+        //Array.ForEach(samples, Console.WriteLine); // https://www.reddit.com/r/csharp/comments/11vb5fq/the_kool_kidz_way_of_printing_an_array/
+        long[] hashes;
+        for (int i = 0; i < samples.Length; i++)
+        {
+            hashes = WindowPartitioning(samples[i], out List<int> offsets);
+            
+            for(int j = 0; j < hashes.Length; j++)
+            {
+                DataBaseManager.addHash(hashes[j], offsets[j], songID[i]);
+            }
         }
 
-        //sampling
-        float[] samples = shascam.FileHandler.LoadWav(filePath);
-        //Array.ForEach(samples, Console.WriteLine); // https://www.reddit.com/r/csharp/comments/11vb5fq/the_kool_kidz_way_of_printing_an_array/
+        DataBaseManager.printAllDB();
+        
+        //WindowPartitioning(samples);
 
-        
-        
+    }
+
+    private static long[] WindowPartitioning(float[] samples, out List<int> offsets)
+    {
+        offsets = new List<int>();
+        Console.Write("WindowPartitioning");
+        List<long> hashes = new List<long>();
         for (int offset = 0; offset < samples.Length - windowSize; offset += windowSize) // probably buggy
         {
+            offsets.Add(offset);
             double[] window = new double[windowSize];
             var complex = new System.Numerics.Complex[windowSize];
             for (int i = 0; i < windowSize; i++)
@@ -57,14 +83,10 @@ class Programio
             }
 
             long hash = Algorithm.shascam(ampl);
-            //Array.ForEach(ampl, Console.WriteLine);
 
-            //PrintBytes(offset, hash);
-
-
+            hashes.Add(hash);
         }
-
-
+        return hashes.ToArray();
     }
 
     private static void PrintBytes(int offset, long hash)

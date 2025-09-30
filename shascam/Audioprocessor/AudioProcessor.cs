@@ -5,7 +5,7 @@ using NAudio.Wave;
 
 public class AudioProcessor
 {
-    public void ConvertToWav(string inputPath, string outputPath)
+    public void ConvertToWav(string inputPath, string outputPath) // copied directly from https://github.com/FFmpeg/FFmpeg/wiki/FFmpeg-Options
     {
         var ffmpegFolder = @"ffmpeg-2025-09-08-git-45db6945e9-essentials_build\bin";
         var oldPath = Environment.GetEnvironmentVariable("PATH") ?? "";
