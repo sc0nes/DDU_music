@@ -35,7 +35,7 @@ class Programio
             return;
         }*/
         //sampling
-        Console.WriteLine("22");
+        //Console.WriteLine("22");
         //float[] samples = shascam.FileHandler.LoadWav(filePath);
         string pathy = "./White Girl Music";
         (float[][], int[]) outp = shascam.FileHandler.LoadFolderForDB(pathy);
@@ -49,7 +49,7 @@ class Programio
             
             for(int j = 0; j < hashes.Length; j++)
             {
-                DataBaseManager.addHash(hashes[j], offsets[j], songID[i]);
+                DataBaseManager.addHash(hashes[j], j*50, songID[i]); // vi har afmålt at vinduerne vare i 50ms
             }
         }
 
