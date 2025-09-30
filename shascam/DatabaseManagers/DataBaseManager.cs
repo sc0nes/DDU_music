@@ -36,24 +36,50 @@ public class DataBaseManager
         string dbPath = Path.Combine(projectRoot, "SongDatabase.db");
         string connectionString = $"Data Source={dbPath};";
         int currentId = 0;
+        
+
+        
+        
+
+
         using (var connection = new SqliteConnection(connectionString))
         {
 
             connection.Open();
             Console.WriteLine("Connected to DB!");
 
+
+            using (var checkCmd = connection.CreateCommand())
+            {
+                checkCmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table';";
+                using var reader = checkCmd.ExecuteReader();
+
+                Console.WriteLine("Tables in DB:");
+                while (reader.Read())
+                {
+                    Console.WriteLine(reader.GetString(0));
+                }
+            }
+
+
+
+
+
+
             using SqliteCommand command = new SqliteCommand();
             command.CommandText = @"INSERT INTO SongInfo (SongArtist, SongName) VALUES (@artist, @name);";
             command.Parameters.AddWithValue("@artist", "artist unknown");
             command.Parameters.AddWithValue("@name", name);
             command.Connection = connection;
+
             command.ExecuteNonQuery();
             command.Parameters.Clear();
 
 
-            command.CommandText = "SELECT MAX(song_id) FROM SongInfo;";
+            command.CommandText = "SELECT MAX(song_id) FROM fingerprints;";
             command.Connection = connection;
-            currentId = DBNull.Value != null ? Convert.ToInt32(command.ExecuteScalar()) : 0;//lao, yk that i know the ? operator. it was easier than writing a whole ass if statement 
+            var result = command.ExecuteScalar();
+            currentId = (result != DBNull.Value && result != null) ? Convert.ToInt32(result) : 0;//lao, yk that i know the ? operator. it was easier than writing a whole ass if statement 
             command.Parameters.Clear();
         }
 
