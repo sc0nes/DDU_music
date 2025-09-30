@@ -1,5 +1,6 @@
 ﻿namespace shascam;
 
+using System.Diagnostics;
 using FFMpegCore;
 using NAudio;
 using NAudio.Wave;
@@ -8,21 +9,27 @@ using shascam.AudioProcessor;
 public class FileHandler
 {
     //public static int sampleRate = int.MinValue;
-    public static float[][] LoadFilesForFolder(String Path)
+    public static (float[][], int[]) LoadFolderForDB(String Path)
     {
+        List<int> songID = new List<int>();
         var files = Directory.EnumerateFiles(Path, "*.mp3").ToList();
+        Debug.WriteLine(files.Count);
         var samples = new List<float[]>();
         foreach (var file in files)
         {
+            
             string wavPath = file + ".wav";
             if (!File.Exists(wavPath))
             {
                 var ap = new AudioProcessor.AudioProcessor();
                 ap.ConvertToWav(file, wavPath);
                 samples.Add(LoadWav(wavPath));
+                
+                songID.Add(DatabaseManagers.DataBaseManager.addSong(wavPath)); 
+                
             }
         }
-        return samples.ToArray();
+        return (samples.ToArray(), songID.ToArray());
 
     }
     public static bool FindCorrectPath(out string filePath, string path)
