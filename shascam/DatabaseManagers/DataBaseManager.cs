@@ -60,12 +60,6 @@ public class DataBaseManager
                     Console.WriteLine(reader.GetString(0));
                 }
             }
-
-
-
-
-
-
             using SqliteCommand command = new SqliteCommand();
             command.CommandText = @"INSERT INTO SongInfo (SongArtist, SongName) VALUES (@artist, @name);";
             command.Parameters.AddWithValue("@artist", "artist unknown");
