@@ -6,22 +6,23 @@ using Microsoft.Data.Sqlite;
 
 public class DataBaseManager
 {
+    
     public static void Test()
     {
-    //    printAllDB();
+        //    printAllDB();
         // Get the folder where the compiled program is running
         string scriptDir = AppContext.BaseDirectory;
 
-// Go up three levels to reach the project folder
+        // Go up three levels to reach the project folder
         string projectRoot = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(scriptDir)!.FullName)!.FullName)!.FullName)!.FullName;
 
-// Path to the database in the project folder
+        // Path to the database in the project folder
         string dbPath = Path.Combine(projectRoot, "SongDatabase.db");
 
-        Console.WriteLine("DB Path: " + dbPath + " Test"); 
-// Should now print: C:\Users\carl-\RiderProjects\DDU_music\shascam\SongDatabase.db
+        Console.WriteLine("DB Path: " + dbPath + " Test");
+        // Should now print: C:\Users\carl-\RiderProjects\DDU_music\shascam\SongDatabase.db
 
-// Connection string
+        // Connection string
         string connectionString = $"Data Source={dbPath};";
 
         using (var connection = new SqliteConnection(connectionString))
@@ -30,42 +31,49 @@ public class DataBaseManager
             Console.WriteLine("Connected to DB! " + dbPath);
             using var cmd = connection.CreateCommand();
             cmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table';";
-           /* using var reader = cmd.ExecuteReader();
-            Console.WriteLine("Tables in DB:");
-            while (reader.Read())
-            {
-                Console.WriteLine(reader.GetString(0));
-                using SqliteCommand command = new SqliteCommand();
-                command.CommandText = @"INSERT INTO SongInfo (SongArtist, SongName) VALUES (@artist, @name);";
-                command.Parameters.AddWithValue("@artist", "Test");
-                command.Parameters.AddWithValue("@name", "Test");
-                command.Connection = connection;
-                try
-                {
-                    command.ExecuteNonQuery();
-                    Console.WriteLine("Inserted succesfully!");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Insert failed: " + ex.Message);
-                }
-                command.Parameters.Clear();
-            }*/
-        } 
+            /* using var reader = cmd.ExecuteReader();
+             Console.WriteLine("Tables in DB:");
+             while (reader.Read())
+             {
+                 Console.WriteLine(reader.GetString(0));
+                 using SqliteCommand command = new SqliteCommand();
+                 command.CommandText = @"INSERT INTO SongInfo (SongArtist, SongName) VALUES (@artist, @name);";
+                 command.Parameters.AddWithValue("@artist", "Test");
+                 command.Parameters.AddWithValue("@name", "Test");
+                 command.Connection = connection;
+                 try
+                 {
+                     command.ExecuteNonQuery();
+                     Console.WriteLine("Inserted succesfully!");
+                 }
+                 catch (Exception ex)
+                 {
+                     Console.WriteLine("Insert failed: " + ex.Message);
+                 }
+                 command.Parameters.Clear();
+             }*/
+        }
     }
     public static int AddSong(String name)
     {
         string scriptDir = AppContext.BaseDirectory;
+
         string projectRoot = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(scriptDir)!.FullName)!.FullName)!.FullName)!.FullName;
         string dbPath = Path.Combine(projectRoot, "SongDatabase.db");
 
+
         string connectionString = $"Data Source={dbPath};";
         int currentId = 0;
-        
+
         using (var connection = new SqliteConnection(connectionString))
         {
 
             connection.Open();
+
+            using var fkCmd = connection.CreateCommand();
+            fkCmd.CommandText = "PRAGMA foreign_keys = ON;";
+            fkCmd.ExecuteNonQuery();
+
             using SqliteCommand command = new SqliteCommand();
             command.CommandText = @"INSERT INTO SongInfo (SongArtist, SongName) VALUES (@artist, @name);";
             command.Parameters.AddWithValue("@artist", "artist unknown");
@@ -94,22 +102,22 @@ public class DataBaseManager
         return currentId;
 
     }
-    
-    
+
+
     public static void addHash(long hash, int offset, int ID)
     {
         // Get the folder where the compiled program is running
         string scriptDir = AppContext.BaseDirectory;
 
-// Go up three levels to reach the project folder
+        // Go up three levels to reach the project folder
         string projectRoot = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(scriptDir)!.FullName)!.FullName)!.FullName)!.FullName;
 
-// Path to the database in the project folder
+        // Path to the database in the project folder
         string dbPath = Path.Combine(projectRoot, "SongDatabase.db");
-        
-// Should now print: C:\Users\carl-\RiderProjects\DDU_music\shascam\SongDatabase.db
 
-// Connection string
+        // Should now print: C:\Users\carl-\RiderProjects\DDU_music\shascam\SongDatabase.db
+
+        // Connection string
         string connectionString = $"Data Source={dbPath};";
         using (var connection = new SqliteConnection(connectionString))
         {
@@ -118,7 +126,7 @@ public class DataBaseManager
             fkCmd.CommandText = "PRAGMA foreign_keys = ON;";
             fkCmd.ExecuteNonQuery();
 
-            
+
             using SqliteCommand command = new SqliteCommand();
             command.CommandText = @"INSERT INTO fingerprints (song_id, time_offset, songData) VALUES (@ID, @offset, @hash);";
             command.Parameters.AddWithValue("@ID", ID);
@@ -146,6 +154,7 @@ public class DataBaseManager
         string scriptDir = AppContext.BaseDirectory;
         string projectRoot = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(scriptDir)!.FullName)!.FullName)!.FullName)!.FullName;
         string dbPath = Path.Combine(projectRoot, "SongDatabase.db");
+
         string connectionString = $"Data Source={dbPath};";
         
         using (var connection = new SqliteConnection(connectionString))
@@ -203,5 +212,43 @@ public class DataBaseManager
             }
         }
     }
+    public static List<(int songID, int dbOffset)> lookupHash(long hash)
+    {
+        var results = new List<(int songID, int dbOffset)>();
+
+        string scriptDir = AppContext.BaseDirectory;
+        string projectRoot = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(scriptDir)!.FullName)!.FullName)!.FullName)!.FullName;
+        string dbPath = Path.Combine(projectRoot, "SongDatabase.db");
+
+        string connectionString = $"Data Source={dbPath};";
+
+        using (var connection = new SqliteConnection(connectionString))
+        {
+            connection.Open();
+            using (var cmd = new SqliteCommand(
+                @"SELECT SongID, timeoffset FROM Fingerprints WHERE songData = @hash", connection))
+            {
+                cmd.Parameters.AddWithValue("@hash", hash);
+
+
+                
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        int songID = reader.GetInt32(0);
+                        int dbOffset = reader.GetInt32(1);
+                        results.Add((songID, dbOffset));
+                    }
+                }
+            }
+        }
+        
+    
+    return results; 
+}
+
+    
 
 }

@@ -45,12 +45,12 @@ class Programio
         float[][] samples = outp.Item1;
         int[] songID = outp.Item2;
         //Array.ForEach(samples, Console.WriteLine); // https://www.reddit.com/r/csharp/comments/11vb5fq/the_kool_kidz_way_of_printing_an_array/
-        long[] hashes;
+        List<long> hashes;
         for (int i = 0; i < samples.Length; i++)
         {
             hashes = WindowPartitioning(samples[i], out List<int> offsets);
             
-            for(int j = 0; j < hashes.Length; j++)
+            for(int j = 0; j < hashes.Count; j++)
             {
                 DataBaseManager.addHash(hashes[j], j*50, songID[i]); // vi har afmålt at vinduerne vare i 50ms
             }
@@ -61,7 +61,7 @@ class Programio
 
     }
 
-    private static long[] WindowPartitioning(float[] samples, out List<int> offsets)
+    private static List<long> WindowPartitioning(float[] samples, out List<int> offsets)
     {
         offsets = new List<int>();
         Console.Write("WindowPartitioning");
@@ -88,7 +88,46 @@ class Programio
 
             hashes.Add(hash);
         }
-        return hashes.ToArray();
+        return hashes;
+    }
+    public static int IdentifySong(string path)
+    {
+        float[] samples = shascam.FileHandler.SampleWav(path);
+        List<long> hashes = WindowPartitioning(samples, out List<int> offsets);
+
+        var votes = new Dictionary<(int songID, int delta), int>(); //the hash is stored as a long
+
+        for (int i = 0; i < hashes.Count; i++)
+        {
+            long qHash = hashes[i];
+            int qOffset = offsets[i];
+
+            var matches = DataBaseManager.lookupHash(qHash);
+
+            foreach (var (songID, dbOffset) in matches)
+            {
+                int delta = dbOffset - qOffset;
+                var key = (songID, delta);
+
+                if (!votes.ContainsKey(key))
+                    votes[key] = 0;
+
+                votes[key]++;
+            }
+
+        }
+        int bestSongID = -1;
+        int maxVotes = 0;
+
+        foreach (var vote in votes)
+        {
+            if (vote.Value > maxVotes)
+            {
+                bestSongID = vote.Key.songID;
+                maxVotes = vote.Value;
+            }
+        }
+        return bestSongID;
     }
 
     private static void PrintBytes(int offset, long hash)
@@ -99,7 +138,7 @@ class Programio
         {
             Console.WriteLine((int)b);
         }
-        Console.WriteLine("/offset/" + offset/4096);
+        Console.WriteLine("/offset/" + offset / 4096);
     }
 
 

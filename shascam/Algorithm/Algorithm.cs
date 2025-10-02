@@ -24,7 +24,7 @@ public class Algorithm
 
 
         string path = "log.txt";
-        WriteLog(bassNotes, midNotes1, midNotes2, highNotes, path);
+        //WriteLog(bassNotes, midNotes1, midNotes2, highNotes, path);
 
         string line = $"{bassNotes.Item2}\t{midNotes1.Item2}\t{midNotes2.Item2}\t{highNotes.Item2}";
         return hash(line);

@@ -26,6 +26,7 @@ public class FileHandler
         
         foreach (var file in files)
         {
+
             string wavPath = file + ".wav";
             Console.WriteLine($"Processing: {file}");
             Console.WriteLine($"WAV path would be: {wavPath}");
@@ -33,6 +34,7 @@ public class FileHandler
             
             if (!File.Exists(wavPath))
             {
+
                 Console.WriteLine("=== WAV DOES NOT EXIST - CONVERTING ===");
                 Console.WriteLine("Tried to add song: " + wavPath);
                 
@@ -46,7 +48,7 @@ public class FileHandler
                     if (File.Exists(wavPath))
                     {
                         Console.WriteLine("WAV file successfully created!");
-                        samples.Add(LoadWav(wavPath));
+                        samples.Add(SampleWav(wavPath));
                         songID.Add(DatabaseManagers.DataBaseManager.AddSong(wavPath)); 
                     }
                     else
@@ -63,10 +65,11 @@ public class FileHandler
             {
                 Console.WriteLine("=== WAV ALREADY EXISTS - SKIPPING CONVERSION ===");
                 // TODO: You still need to add the song to database here!
-                samples.Add(LoadWav(wavPath));
+                samples.Add(SampleWav(wavPath));
                 
                 // Add this line to handle existing WAV files:
                 songID.Add(DatabaseManagers.DataBaseManager.AddSong(wavPath));
+
             }
             
             Console.WriteLine("---"); // Separator for readability
@@ -100,8 +103,9 @@ public class FileHandler
 
         return true;
     }
-    
-    public static float[] LoadWav(string path)
+
+    public static float[] SampleWav(string path)
+
     {
         var reader = new AudioFileReader(path);
         var samples = new float[reader.Length / sizeof(float)];
@@ -114,7 +118,7 @@ public class FileHandler
                             $"Channels: {reader.WaveFormat.Channels}, " +
                             $"BitsPerSample: {reader.WaveFormat.BitsPerSample}, " +
                             $"Duration: {reader.TotalTime}, " +
-                            $"Volume: {reader.Volume}" );
+                            $"Volume: {reader.Volume}");
         return samples;
     }
 
@@ -124,5 +128,9 @@ public class FileHandler
         int sampleSizeInBits = 16;
         int channels = 1;//maybe increase this to 2, and make it work with stereo
         return new WaveFormat(sampleRate, sampleSizeInBits, channels);
+    }
+    public static void CompareWav(String path)
+    {
+        
     }
 }
