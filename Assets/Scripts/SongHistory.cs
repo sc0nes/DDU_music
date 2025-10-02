@@ -1,5 +1,5 @@
 ﻿/*********************************************************************
- * SongHistory – gemmer de seneste 5 sange + deres kunstnere
+ * SongHistory – gemmer de seneste sange + deres kunstnere
  *
  *   • 10 UI‑tekstfelter (5 song + 5 maker) sættes i Inspector.
  *   •  AddSong(string song, string maker)  → skifter listen ned,
