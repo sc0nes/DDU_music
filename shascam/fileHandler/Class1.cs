@@ -13,25 +13,69 @@ public class FileHandler
     {
         List<int> songID = new List<int>();
         var files = Directory.EnumerateFiles(Path, "*.mp3").ToList();
-        Debug.WriteLine(files.Count);
-        var samples = new List<float[]>();
+        
+        Console.WriteLine($"Found {files.Count} MP3 files in: {Path}");
+        
+        // Debug: List all found files
         foreach (var file in files)
         {
-            
+            Console.WriteLine($"Found MP3: {file}");
+        }
+        
+        var samples = new List<float[]>();
+        
+        foreach (var file in files)
+        {
             string wavPath = file + ".wav";
+            Console.WriteLine($"Processing: {file}");
+            Console.WriteLine($"WAV path would be: {wavPath}");
+            Console.WriteLine($"WAV file exists: {File.Exists(wavPath)}");
+            
             if (!File.Exists(wavPath))
             {
-                var ap = new AudioProcessor.AudioProcessor();
-                ap.ConvertToWav(file, wavPath);
+                Console.WriteLine("=== WAV DOES NOT EXIST - CONVERTING ===");
+                Console.WriteLine("Tried to add song: " + wavPath);
+                
+                try
+                {
+                    var ap = new AudioProcessor.AudioProcessor();
+                    ap.ConvertToWav(file, wavPath);
+                    Console.WriteLine($"Conversion completed for: {wavPath}");
+                    
+                    // Check if WAV was actually created
+                    if (File.Exists(wavPath))
+                    {
+                        Console.WriteLine("WAV file successfully created!");
+                        samples.Add(LoadWav(wavPath));
+                        songID.Add(DatabaseManagers.DataBaseManager.AddSong(wavPath)); 
+                    }
+                    else
+                    {
+                        Console.WriteLine("ERROR: WAV file was not created!");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"ERROR during conversion: {ex.Message}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("=== WAV ALREADY EXISTS - SKIPPING CONVERSION ===");
+                // TODO: You still need to add the song to database here!
                 samples.Add(LoadWav(wavPath));
                 
-                songID.Add(DatabaseManagers.DataBaseManager.addSong(wavPath)); 
-                
+                // Add this line to handle existing WAV files:
+                songID.Add(DatabaseManagers.DataBaseManager.AddSong(wavPath));
             }
+            
+            Console.WriteLine("---"); // Separator for readability
         }
+        
+        Console.WriteLine($"Final result: {samples.Count} samples, {songID.Count} song IDs");
         return (samples.ToArray(), songID.ToArray());
-
     }
+    
     public static bool FindCorrectPath(out string filePath, string path)
     {
         //filePath = "test";
@@ -56,6 +100,7 @@ public class FileHandler
 
         return true;
     }
+    
     public static float[] LoadWav(string path)
     {
         var reader = new AudioFileReader(path);

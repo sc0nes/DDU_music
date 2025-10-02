@@ -26,6 +26,7 @@ class Programio
     {
         Console.WriteLine("Hello, Sha-scammers!");
         DataBaseManager.Test();
+
         // generelle kodestruktur her følger https://www.royvanrijn.com/blog/2010/06/creating-shazam-in-java/
         /*string filePath = "test.wav";
         
@@ -36,7 +37,9 @@ class Programio
         }*/
         //sampling
         //Console.WriteLine("22");
-        //float[] samples = shascam.FileHandler.LoadWav(filePath);
+        //float[] samples = shascam.FileHandler.LoadWav(filePath); 
+        
+        
         string pathy = "./White Girl Music";
         (float[][], int[]) outp = shascam.FileHandler.LoadFolderForDB(pathy);
         float[][] samples = outp.Item1;
@@ -52,8 +55,7 @@ class Programio
                 DataBaseManager.addHash(hashes[j], j*50, songID[i]); // vi har afmålt at vinduerne vare i 50ms
             }
         }
-
-        DataBaseManager.printAllDB();
+        
         
         //WindowPartitioning(samples);
 
