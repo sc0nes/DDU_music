@@ -1,14 +1,16 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
+using UnityEngine.Android;               
 
 public class RecordAudio : MonoBehaviour
 {
     private AudioClip recordedClip;
-    [SerializeField] AudioSource audioSource;
-    private string filePath = "recording.wav";
-    private string directoryPath = "Recordings";
+
+    private string directoryPath => Path.Combine(Application.persistentDataPath, "Recordings");
+    private string fileName => "recording.wav";
+    private string FullPath => Path.Combine(directoryPath, fileName);
+
+
     private float startTime;
     private float recordingLength;
 
@@ -17,6 +19,17 @@ public class RecordAudio : MonoBehaviour
         if (!Directory.Exists(directoryPath))
         {
             Directory.CreateDirectory(directoryPath);
+            //Debug.Log($"[RecordAudio] Oprettet mappe: {directoryPath}");
+        }
+        RequestMicrophonePermission();
+        //https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Android.Permission.RequestUserPermission.html
+    }
+
+    public void RequestMicrophonePermission()
+    {
+        if (!Permission.HasUserAuthorizedPermission(Permission.Microphone))
+        {
+            Permission.RequestUserPermission(Permission.Microphone);
         }
     }
 
@@ -24,10 +37,11 @@ public class RecordAudio : MonoBehaviour
     {
         string device = Microphone.devices[0];
         int sampleRate = 44100;
-        int lengthSec = 3599;
+        int maxLengthSec = 3599; // 59 min 59sek no mas else KABOOM bluescreen
 
-        recordedClip = Microphone.Start(device, false, lengthSec, sampleRate);
+        recordedClip = Microphone.Start(device, false, maxLengthSec, sampleRate);
         startTime = Time.realtimeSinceStartup;
+        //Debug.Log("[RecordAudio] Optagelse påbegyndt...");
     }
 
     public void StopRecording()
@@ -35,33 +49,26 @@ public class RecordAudio : MonoBehaviour
         Microphone.End(null);
         recordingLength = Time.realtimeSinceStartup - startTime;
         recordedClip = TrimClip(recordedClip, recordingLength);
+
+        //Debug.Log($"[RecordAudio] Optagelse stoppet. Længde: {recordingLength:F2}s");
         SaveRecording();
     }
 
     public void SaveRecording()
     {
-        if (recordedClip != null)
-        {
-            filePath = Path.Combine(directoryPath, filePath);
-            WavUtility.Save(filePath, recordedClip);
-            Debug.Log("Recording saved as " + filePath);
-        }
-        else
-        {
-            Debug.LogError("No recording found to save.");
-        }
+        // Bruger wawUtill som er en anden fil der håndtere kreationen af lyd filen
+        WavUtility.Save(FullPath, recordedClip);
+        Debug.Log($"[RecordAudio] Optagelse gemt: {FullPath}");
     }
 
-    private AudioClip TrimClip(AudioClip clip, float length)
+    private AudioClip TrimClip(AudioClip clip, float lengthSec)
     {
-        int samples = (int)(clip.frequency * length);
-        float[] data = new float[samples];
+        int samples = Mathf.FloorToInt(clip.frequency * lengthSec);
+        float[] data = new float[samples * clip.channels];
         clip.GetData(data, 0);
 
-        AudioClip trimmedClip = AudioClip.Create(clip.name, samples,
-            clip.channels, clip.frequency, false);
-        trimmedClip.SetData(data, 0);
-
-        return trimmedClip;
+        AudioClip trimmed = AudioClip.Create(clip.name, samples, clip.channels, clip.frequency, false);
+        trimmed.SetData(data, 0);
+        return trimmed;
     }
 }
