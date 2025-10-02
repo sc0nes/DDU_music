@@ -99,14 +99,14 @@ class Programio
 
         for (int i = 0; i < hashes.Count; i++)
         {
-            long qHash = hashes[i];
-            int qOffset = offsets[i];
+            long currentHash = hashes[i];
+            int currentOffset = offsets[i];
 
-            var matches = DataBaseManager.lookupHash(qHash);
+            var matches = DataBaseManager.lookupHash(currentHash);
 
             foreach (var (songID, dbOffset) in matches)
             {
-                int delta = dbOffset - qOffset;
+                int delta = dbOffset - currentOffset;
                 var key = (songID, delta);
 
                 if (!votes.ContainsKey(key))
