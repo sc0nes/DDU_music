@@ -6,7 +6,44 @@ using Microsoft.Data.Sqlite;
 
 public class DataBaseManager
 {
-    
+    static Dictionary<long, List<(int songID, int dbOffset)>> allFingerprints;
+
+    public static void LoadFingerprintsIntoMemory()
+    {
+        allFingerprints = new Dictionary<long, List<(int, int)>>();
+
+        string scriptDir = AppContext.BaseDirectory;
+        string projectRoot = Directory.GetParent(
+            Directory.GetParent(
+            Directory.GetParent(
+            Directory.GetParent(scriptDir)!.FullName)!.FullName)!.FullName)!.FullName;
+        string dbPath = Path.Combine(projectRoot, "SongDatabase.db");
+
+        string connectionString = $"Data Source={dbPath};";
+
+        using (var connection = new SqliteConnection(connectionString))
+        {
+            connection.Open();
+            using (var cmd = new SqliteCommand("SELECT SongID, timeoffset, songData FROM Fingerprints", connection))
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    int songID = reader.GetInt32(0);
+                    int dbOffset = reader.GetInt32(1);
+                    long hash = reader.GetInt64(2); // your songData hash
+
+                    if (!allFingerprints.ContainsKey(hash))
+                        allFingerprints[hash] = new List<(int, int)>();
+
+                    allFingerprints[hash].Add((songID, dbOffset));
+                }
+            }
+        }
+
+        Console.WriteLine($"Loaded {allFingerprints.Count} unique hashes into memory.");
+    }
+
     public static void Test()
     {
         //    printAllDB();
@@ -212,42 +249,15 @@ public class DataBaseManager
             }
         }
     }
+    
+
     public static List<(int songID, int dbOffset)> lookupHash(long hash)
     {
-        var results = new List<(int songID, int dbOffset)>();
-
-        string scriptDir = AppContext.BaseDirectory;
-        string projectRoot = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(scriptDir)!.FullName)!.FullName)!.FullName)!.FullName;
-        string dbPath = Path.Combine(projectRoot, "SongDatabase.db");
-
-        string connectionString = $"Data Source={dbPath};";
-
-        using (var connection = new SqliteConnection(connectionString))
-        {
-            connection.Open();
-            using (var cmd = new SqliteCommand(
-                @"SELECT SongID, timeoffset FROM Fingerprints WHERE songData = @hash", connection))
-            {
-                cmd.Parameters.AddWithValue("@hash", hash);
-
-
-                
-
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        int songID = reader.GetInt32(0);
-                        int dbOffset = reader.GetInt32(1);
-                        results.Add((songID, dbOffset));
-                    }
-                }
-            }
-        }
-        
-    
-    return results; 
-}
+        //todo use allFingerprints to get the songID and dbOffset
+        allFingerprints.TryGetValue(hash, out List<(int, int)> matches);
+        if (matches == null) matches = new List<(int, int)>();
+        return matches; 
+    }
 
     
 

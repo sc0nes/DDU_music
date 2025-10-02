@@ -69,19 +69,16 @@ public class Algorithm
 
         for (int freq = low_limit; freq < high_limit; freq++)
         {
-            //Get the magnitude:
             double mag = Math.Log(Math.Abs(FFTresults[freq]) + 1);
-            //double mag = FFTresults[freq];
             int index = GetIndex(freq);
 
-            //Save the highest magnitude and corresponding frequency:
             if (mag > highMag)
             {
                 highMag = mag;
                 highMagIndex = freq;
             }
         }
-        
+
 
         return (highMag, highMagIndex);
     }
