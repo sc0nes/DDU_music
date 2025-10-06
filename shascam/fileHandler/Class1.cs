@@ -113,6 +113,8 @@ public class FileHandler
         Array.Resize(ref samples, read);
 
 
+
+
         WaveFormat format = GetFormat();
         Console.WriteLine($"Sample rate: {reader.WaveFormat.SampleRate}, " +
                             $"Channels: {reader.WaveFormat.Channels}, " +
@@ -124,13 +126,9 @@ public class FileHandler
 
     public static WaveFormat GetFormat()
     {
-        int sampleRate = 44100;
+        int sampleRate = 48000;
         int sampleSizeInBits = 16;
         int channels = 1;//maybe increase this to 2, and make it work with stereo
         return new WaveFormat(sampleRate, sampleSizeInBits, channels);
-    }
-    public static void CompareWav(String path)
-    {
-        
     }
 }

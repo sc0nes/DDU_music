@@ -41,8 +41,15 @@ class Programio
         //float[] samples = shascam.FileHandler.LoadWav(filePath); 
 
 
-        FillDB();
+        //FillDB(); //should take 30 minutes to run
+        //BatchFillDB(); //should take 5 minutes to run
 
+        int i = IdentifySong("./1006.WAV");
+        Console.WriteLine(i);
+        string str = DataBaseManager.GetSongNameFromID(i);
+        Console.WriteLine(str);
+        
+        
 
         //WindowPartitioning(samples);
 
@@ -55,7 +62,7 @@ class Programio
         float[][] samples = outp.Item1;
         int[] songID = outp.Item2;
         //Array.ForEach(samples, Console.WriteLine); // https://www.reddit.com/r/csharp/comments/11vb5fq/the_kool_kidz_way_of_printing_an_array/
-        /*List<long> hashes;
+        List<long> hashes;
         for (int i = 0; i < samples.Length; i++)
         {
             hashes = WindowPartitioning(samples[i], out List<int> offsets);
@@ -64,13 +71,43 @@ class Programio
             {
                 DataBaseManager.addHash(hashes[j], j * 50, songID[i]); // vi har afmålt at vinduerne vare i 50ms
             }
-        }*/
+        }
+    }
+    private static void BatchFillDB()
+    {
+        string pathy = "./White Girl Music";
+        (float[][], int[]) outp = shascam.FileHandler.LoadFolderForDB(pathy);
+        float[][] samples = outp.Item1;
+        int[] songID = outp.Item2;
+        List<(long hash, int offset, int songID)> batch = new List<(long, int, int)>();
+        int batchSize = 5000; // random number, change if you want
+
+        for (int i = 0; i < samples.Length; i++)
+        {
+            List<int> offsets;
+            var hashes = WindowPartitioning(samples[i], out offsets);
+            Console.WriteLine("WindowPartitioning: " + i);
+            for (int j = 0; j < hashes.Count; j++)
+            {
+                batch.Add((hashes[j], offsets[j], songID[i]));
+
+                if (batch.Count >= batchSize)
+                {
+                    DataBaseManager.AddHashesBatch(batch);
+                    batch.Clear();
+                }
+            }
+        }
+
+        // Insert any remaining hashes
+        if (batch.Count > 0)
+        DataBaseManager.AddHashesBatch(batch);
     }
 
     private static List<long> WindowPartitioning(float[] samples, out List<int> offsets)
     {
         offsets = new List<int>();
-        Console.Write("WindowPartitioning");
+        
         List<long> hashes = new List<long>();
         for (int offset = 0; offset < samples.Length - windowSize; offset += windowSize) // probably buggy
         {
@@ -106,9 +143,10 @@ class Programio
         for (int i = 0; i < hashes.Count; i++)
         {
             long currentHash = hashes[i];
-            int currentOffset = offsets[i];
+            int currentOffset = i * 50;
+            //Console.WriteLine(" Offset: " + currentOffset);
 
-            var matches = DataBaseManager.lookupHash(currentHash);
+            var matches = DataBaseManager.lookupHash(currentHash); //you have to load the db into RAM for this function to work btw
 
             foreach (var (songID, dbOffset) in matches)
             {
@@ -120,10 +158,10 @@ class Programio
 
                 votes[key]++;
             }
-
         }
         int bestSongID = -1;
         int maxVotes = 0;
+        Debug_the_thing(votes);
 
         foreach (var vote in votes)
         {
@@ -131,9 +169,21 @@ class Programio
             {
                 bestSongID = vote.Key.songID;
                 maxVotes = vote.Value;
+
             }
         }
         return bestSongID;
+    }
+
+    private static void Debug_the_thing(Dictionary<(int songID, int delta), int> votes)
+    {
+        foreach (var kvp in votes)
+        {
+            var key = kvp.Key;   // (songID, delta)
+            var count = kvp.Value;
+            if (count >= 2)
+                Console.WriteLine($"SongID: {key.songID}, Delta: {key.delta}, Votes: {count}");
+        }
     }
 
     private static void PrintBytes(int offset, long hash)

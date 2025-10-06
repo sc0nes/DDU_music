@@ -1,13 +1,18 @@
 ﻿namespace shascam.DatabaseManagers;
 using System;
+using System.Dynamic;
 using System.IO;
 using Microsoft.Data.Sqlite;
 
 
 public class DataBaseManager
 {
-    static Dictionary<long, List<(int songID, int dbOffset)>> allFingerprints;
-    
+    static Dictionary<long, List<(int songID, int dbOffset)>> allFingerprints = new Dictionary<long, List<(int, int)>>();
+
+    public static Dictionary<long, List<(int songID, int dbOffset)>> GetAllFingerprints()
+    {
+        return allFingerprints;
+    } 
     public static void LoadFingerprintsIntoMemory()
     {
         allFingerprints = new Dictionary<long, List<(int, int)>>();
@@ -43,6 +48,33 @@ public class DataBaseManager
 
         Console.WriteLine($"Loaded {allFingerprints.Count} unique hashes into memory.");
     }
+    public static string GetSongNameFromID(int songID){
+        string scriptDir = AppContext.BaseDirectory;
+        string projectRoot = Directory.GetParent(
+            Directory.GetParent(
+            Directory.GetParent(
+            Directory.GetParent(scriptDir)!.FullName)!.FullName)!.FullName)!.FullName;
+        string dbPath = Path.Combine(projectRoot, "SongDatabase.db");
+
+        string connectionString = $"Data Source={dbPath};";
+
+        using (var connection = new SqliteConnection(connectionString))
+        {
+            connection.Open();
+
+            using (var cmd = new SqliteCommand("SELECT SongName FROM SongInfo WHERE SongID = @id", connection))
+            {
+                cmd.Parameters.AddWithValue("@id", songID);
+
+                object? result = cmd.ExecuteScalar();
+                if (result != null && result != DBNull.Value)
+                    return result.ToString()!; // return the song title
+            }
+        }
+
+        return "Unknown Song";
+    }
+
 
     public static void Test()
     {
@@ -173,7 +205,7 @@ public class DataBaseManager
             try
             {
                 command.ExecuteNonQuery();
-                Console.WriteLine("Inserted succesfully!");
+                //Console.WriteLine("Inserted succesfully!");
             }
             catch (Exception ex)
             {
@@ -184,30 +216,31 @@ public class DataBaseManager
         }
 
     }
-    public static void AddHashesBatch(List<long> hashes, List<int> offsets, int songID)
-{
-    string scriptDir = AppContext.BaseDirectory;
-    string projectRoot = Directory.GetParent(
-        Directory.GetParent(
-        Directory.GetParent(
-        Directory.GetParent(scriptDir)!.FullName)!.FullName)!.FullName)!.FullName;
 
-    string dbPath = Path.Combine(projectRoot, "SongDatabase.db");
-    string connectionString = $"Data Source={dbPath};";
-
-    using (var connection = new SqliteConnection(connectionString))
+    public static void AddHashesBatch(List<(long hash, int offset, int songID)> batch)
     {
+        if (batch == null || batch.Count == 0)
+            return;
+
+        string scriptDir = AppContext.BaseDirectory;
+
+        string projectRoot = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(scriptDir)!.FullName)!.FullName)!.FullName)!.FullName;
+
+        string dbPath = Path.Combine(projectRoot, "SongDatabase.db");
+
+        string connectionString = $"Data Source={dbPath};";
+
+        using var connection = new SqliteConnection(connectionString);
         connection.Open();
+
         using var fkCmd = connection.CreateCommand();
         fkCmd.CommandText = "PRAGMA foreign_keys = ON;";
         fkCmd.ExecuteNonQuery();
 
         using var transaction = connection.BeginTransaction();
         using var command = connection.CreateCommand();
-
-        command.CommandText = 
-            @"INSERT INTO fingerprints (song_id, time_offset, songData) 
-              VALUES (@ID, @offset, @hash);";
+        command.CommandText = @"INSERT INTO fingerprints (song_id, time_offset, songData) 
+                                VALUES (@ID, @offset, @hash);";
 
         var idParam = command.CreateParameter();
         idParam.ParameterName = "@ID";
@@ -221,23 +254,31 @@ public class DataBaseManager
         hashParam.ParameterName = "@hash";
         command.Parameters.Add(hashParam);
 
-        for (int j = 0; j < hashes.Count; j++)
+        command.Transaction = transaction;
+        command.Connection = connection;
+
+        foreach (var (hash, offset, songID) in batch)
         {
             idParam.Value = songID;
-            offsetParam.Value = offsets[j];
-            hashParam.Value = hashes[j];
+            offsetParam.Value = offset;
+            hashParam.Value = hash;
 
-            command.ExecuteNonQuery();
+            try
+            {
+                command.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Insert failed: " + ex.Message);
+            }
         }
 
         transaction.Commit();
     }
-}
 
 
     public static void printAllDB()
     {
-        // Get the folder where the compiled program is running
         string scriptDir = AppContext.BaseDirectory;
         string projectRoot = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(scriptDir)!.FullName)!.FullName)!.FullName)!.FullName;
         string dbPath = Path.Combine(projectRoot, "SongDatabase.db");
@@ -248,7 +289,6 @@ public class DataBaseManager
         {
             connection.Open();
 
-            // First, let's check what tables exist
             using (var cmd = connection.CreateCommand())
             {
                 cmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table';";
@@ -260,7 +300,6 @@ public class DataBaseManager
                 }
             }
 
-            // Now let's check the structure of the SongInfo table
             using (var cmd = connection.CreateCommand())
             {
                 cmd.CommandText = "PRAGMA table_info(SongInfo);";
@@ -272,7 +311,6 @@ public class DataBaseManager
                 }
             }
 
-            // Now try to read the data with the correct column names
             using SqliteCommand command = new SqliteCommand();
             command.CommandText = "SELECT * FROM SongInfo;";
             command.Connection = connection;
@@ -286,7 +324,6 @@ public class DataBaseManager
             }
             Console.WriteLine($"\nActual columns in result: {string.Join(", ", columnNames)}");
 
-            // Now read the data using ordinal positions instead of names
             reader2.Close();
             using var reader3 = command.ExecuteReader();
             while (reader3.Read())
