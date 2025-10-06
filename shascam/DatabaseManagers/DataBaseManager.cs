@@ -24,7 +24,7 @@ public class DataBaseManager
         using (var connection = new SqliteConnection(connectionString))
         {
             connection.Open();
-            using (var cmd = new SqliteCommand("SELECT SongID, timeoffset, songData FROM Fingerprints", connection))
+            using (var cmd = new SqliteCommand("SELECT Song_id, time_offset, songData FROM Fingerprints", connection))
             using (var reader = cmd.ExecuteReader())
             {
                 while (reader.Read())

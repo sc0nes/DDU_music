@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("shascam")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+26da1e29a59e257104a61c92410608105bfcd68c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e14ea0799e23e4af83bf710610193a5d48aa9372")]
 [assembly: System.Reflection.AssemblyProductAttribute("shascam")]
 [assembly: System.Reflection.AssemblyTitleAttribute("shascam")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
