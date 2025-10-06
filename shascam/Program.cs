@@ -41,25 +41,30 @@ class Programio
         //float[] samples = shascam.FileHandler.LoadWav(filePath); 
 
 
+        FillDB();
+
+
+        //WindowPartitioning(samples);
+
+    }
+
+    private static void FillDB()
+    {
         string pathy = "./White Girl Music";
         (float[][], int[]) outp = shascam.FileHandler.LoadFolderForDB(pathy);
         float[][] samples = outp.Item1;
         int[] songID = outp.Item2;
         //Array.ForEach(samples, Console.WriteLine); // https://www.reddit.com/r/csharp/comments/11vb5fq/the_kool_kidz_way_of_printing_an_array/
-        List<long> hashes;
+        /*List<long> hashes;
         for (int i = 0; i < samples.Length; i++)
         {
             hashes = WindowPartitioning(samples[i], out List<int> offsets);
-            
-            for(int j = 0; j < hashes.Count; j++)
-            {
-                DataBaseManager.addHash(hashes[j], j*50, songID[i]); // vi har afmålt at vinduerne vare i 50ms
-            }
-        }
-        
-        
-        //WindowPartitioning(samples);
 
+            for (int j = 0; j < hashes.Count; j++)
+            {
+                DataBaseManager.addHash(hashes[j], j * 50, songID[i]); // vi har afmålt at vinduerne vare i 50ms
+            }
+        }*/
     }
 
     private static List<long> WindowPartitioning(float[] samples, out List<int> offsets)

@@ -7,7 +7,7 @@ using Microsoft.Data.Sqlite;
 public class DataBaseManager
 {
     static Dictionary<long, List<(int songID, int dbOffset)>> allFingerprints;
-
+    
     public static void LoadFingerprintsIntoMemory()
     {
         allFingerprints = new Dictionary<long, List<(int, int)>>();
@@ -184,20 +184,70 @@ public class DataBaseManager
         }
 
     }
+    public static void AddHashesBatch(List<long> hashes, List<int> offsets, int songID)
+{
+    string scriptDir = AppContext.BaseDirectory;
+    string projectRoot = Directory.GetParent(
+        Directory.GetParent(
+        Directory.GetParent(
+        Directory.GetParent(scriptDir)!.FullName)!.FullName)!.FullName)!.FullName;
+
+    string dbPath = Path.Combine(projectRoot, "SongDatabase.db");
+    string connectionString = $"Data Source={dbPath};";
+
+    using (var connection = new SqliteConnection(connectionString))
+    {
+        connection.Open();
+        using var fkCmd = connection.CreateCommand();
+        fkCmd.CommandText = "PRAGMA foreign_keys = ON;";
+        fkCmd.ExecuteNonQuery();
+
+        using var transaction = connection.BeginTransaction();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = 
+            @"INSERT INTO fingerprints (song_id, time_offset, songData) 
+              VALUES (@ID, @offset, @hash);";
+
+        var idParam = command.CreateParameter();
+        idParam.ParameterName = "@ID";
+        command.Parameters.Add(idParam);
+
+        var offsetParam = command.CreateParameter();
+        offsetParam.ParameterName = "@offset";
+        command.Parameters.Add(offsetParam);
+
+        var hashParam = command.CreateParameter();
+        hashParam.ParameterName = "@hash";
+        command.Parameters.Add(hashParam);
+
+        for (int j = 0; j < hashes.Count; j++)
+        {
+            idParam.Value = songID;
+            offsetParam.Value = offsets[j];
+            hashParam.Value = hashes[j];
+
+            command.ExecuteNonQuery();
+        }
+
+        transaction.Commit();
+    }
+}
+
 
     public static void printAllDB()
-    {   
+    {
         // Get the folder where the compiled program is running
         string scriptDir = AppContext.BaseDirectory;
         string projectRoot = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(scriptDir)!.FullName)!.FullName)!.FullName)!.FullName;
         string dbPath = Path.Combine(projectRoot, "SongDatabase.db");
 
         string connectionString = $"Data Source={dbPath};";
-        
+
         using (var connection = new SqliteConnection(connectionString))
         {
             connection.Open();
-            
+
             // First, let's check what tables exist
             using (var cmd = connection.CreateCommand())
             {
@@ -227,7 +277,7 @@ public class DataBaseManager
             command.CommandText = "SELECT * FROM SongInfo;";
             command.Connection = connection;
             using var reader2 = command.ExecuteReader();
-            
+
             // Get the column names first
             var columnNames = new List<string>();
             for (int i = 0; i < reader2.FieldCount; i++)
