@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\IT\\stuffs\\javas\\shascam\\shascam.csproj": {}
+    "C:\\IT\\stuffs\\DDU music\\shascam\\shascam.csproj": {}
   },
   "projects": {
-    "C:\\IT\\stuffs\\javas\\shascam\\shascam.csproj": {
+    "C:\\IT\\stuffs\\DDU music\\shascam\\shascam.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\IT\\stuffs\\javas\\shascam\\shascam.csproj",
+        "projectUniqueName": "C:\\IT\\stuffs\\DDU music\\shascam\\shascam.csproj",
         "projectName": "shascam",
-        "projectPath": "C:\\IT\\stuffs\\javas\\shascam\\shascam.csproj",
+        "projectPath": "C:\\IT\\stuffs\\DDU music\\shascam\\shascam.csproj",
         "packagesPath": "C:\\Users\\Diogenes of Sinope\\.nuget\\packages\\",
-        "outputPath": "C:\\IT\\stuffs\\javas\\shascam\\obj\\",
+        "outputPath": "C:\\IT\\stuffs\\DDU music\\shascam\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Diogenes of Sinope\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -54,9 +54,17 @@
               "target": "Package",
               "version": "[5.0.0, )"
             },
+            "Microsoft.Data.Sqlite": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
             "NAudio": {
               "target": "Package",
               "version": "[2.2.1, )"
+            },
+            "System.Data.SQLite": {
+              "target": "Package",
+              "version": "[2.0.2, )"
             }
           },
           "imports": [
