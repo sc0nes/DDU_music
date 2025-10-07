@@ -209,7 +209,7 @@ GameObject:
   - component: {fileID: 60462227}
   - component: {fileID: 60462226}
   m_Layer: 5
-  m_Name: SONG1 (1)
+  m_Name: text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -462,6 +462,7 @@ RectTransform:
   - {fileID: 532825639}
   - {fileID: 901149946}
   - {fileID: 1813685970}
+  - {fileID: 1602352082}
   m_Father: {fileID: 460192544}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1836,7 +1837,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba25fb8ed1082ff4fa51168b0837d7d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioSource: {fileID: 0}
 --- !u!1 &1465798399
 GameObject:
   m_ObjectHideFlags: 0
@@ -1994,6 +1994,111 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1580720774}
+  m_CullTransparentMesh: 1
+--- !u!1 &1602352081
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1602352082}
+  - component: {fileID: 1602352085}
+  - component: {fileID: 1602352084}
+  - component: {fileID: 1602352083}
+  m_Layer: 5
+  m_Name: LOGO (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1602352082
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1602352081}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 225187098}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 336.22, y: -681}
+  m_SizeDelta: {x: 300, y: 300}
+  m_Pivot: {x: 1.6207356, y: 0.8780477}
+--- !u!114 &1602352083
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1602352081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates:
+  - eventID: 4
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1744592481}
+          m_TargetAssemblyTypeName: SongManager, Assembly-CSharp
+          m_MethodName: TestSaveSong
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+--- !u!114 &1602352084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1602352081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 7b364fc449c02fe41af0cf58a0ff7709, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 1
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1602352085
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1602352081}
   m_CullTransparentMesh: 1
 --- !u!1 &1655818850
 GameObject:
@@ -2418,18 +2523,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6424a50f9d1ceb9479894f5054406216, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  songTexts:
-  - {fileID: 1733741452}
-  - {fileID: 1747190424}
-  - {fileID: 1580720776}
-  - {fileID: 1741385278}
-  - {fileID: 1465798401}
-  makerTexts:
-  - {fileID: 799951965}
-  - {fileID: 157737712}
-  - {fileID: 1655818852}
-  - {fileID: 1120401711}
-  - {fileID: 950662641}
+  welcomeObject: {fileID: 1860497525}
+  B1: {fileID: 642933481}
+  B2: {fileID: 291618059}
+  B3: {fileID: 1709754091}
+  B4: {fileID: 532825638}
+  B5: {fileID: 901149945}
+  SONG1: {fileID: 1733741452}
+  SONG2: {fileID: 1747190424}
+  SONG3: {fileID: 1580720776}
+  SONG4: {fileID: 1741385278}
+  SONG5: {fileID: 1465798401}
+  MAKER1: {fileID: 799951965}
+  MAKER2: {fileID: 157737712}
+  MAKER3: {fileID: 1655818852}
+  MAKER4: {fileID: 1120401711}
+  MAKER5: {fileID: 950662641}
 --- !u!4 &1744592482
 Transform:
   m_ObjectHideFlags: 0

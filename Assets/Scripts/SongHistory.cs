@@ -1,143 +1,171 @@
-﻿/*********************************************************************
- * SongHistory – gemmer de seneste sange + deres kunstnere
- *
- *   • 10 UI‑tekstfelter (5 song + 5 maker) sættes i Inspector.
- *   •  AddSong(string song, string maker)  → skifter listen ned,
- *       gemmer til fil og opdaterer UI.
- *   •  Data gemmes som JSON i  Application.persistentDataPath .
- *
- *   •  Du kan kalde AddSong fra enhver anden komponent
- *      (fx når du henter en ny sang fra en ekstern kilde).
- *********************************************************************/
-
+﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using UnityEngine;
-
-// UI‑tekst; skift til TMP_Text, hvis du bruger TextMeshPro
-using UnityEngine.UI;           // <- normal Unity UI
-//using TMPro;                 // <- udkommentér ovenfor, hvis du bruger TMP
-
-public class SongHistory : MonoBehaviour
+//songManager.SaveSong("Min Nyeste Sang", "Min Kunstner");
+public class SongManager : MonoBehaviour
 {
-    // -----------------------------------------------------------------
-    // 0️⃣ UI – træk 10 tekst‑felter ind i Inspector
-    // -----------------------------------------------------------------
-    [Header("UI – Song‑navne (1‑5)")]
-    public Text[] songTexts = new Text[5];   // songTexts[0] = nr. 1, … songTexts[4] = nr. 5
+    public GameObject welcomeObject;
+    public GameObject B1, B2, B3, B4, B5;
+    public Text SONG1, SONG2, SONG3, SONG4, SONG5;
+    public Text MAKER1, MAKER2, MAKER3, MAKER4, MAKER5;
 
-    [Header("UI – Kunstner‑navne (1‑5)")]
-    public Text[] makerTexts = new Text[5];   // makerTexts[0] = nr. 1, …
+    private const string saveFile = "saved_songs.json";
 
-    // -----------------------------------------------------------------
-    // 1️⃣ Intern data‑struktur
-    // -----------------------------------------------------------------
     [System.Serializable]
-    private class SongEntry
+    public class SongData
     {
-        public string song;
-        public string maker;
+        public string songName;
+        public string makerName;
+        public System.DateTime saveDate;
     }
 
-    private const string fileName = "songHistory.json";
-    private List<SongEntry> history = new List<SongEntry>();  // maks 5
-
-    // -----------------------------------------------------------------
-    // 2️⃣ Unity‑livscyklus
-    // -----------------------------------------------------------------
-    private void Awake()
+    [System.Serializable]
+    private class SavedSongsData
     {
-        LoadHistory();          // henter gemt resultat (hvis der findes)
-        UpdateUI();             // viser hvad vi har ved start
+        public List<SongData> songs = new List<SongData>();
     }
 
-    // -----------------------------------------------------------------
-    // 3️⃣ PUBLIC – kaldes fra andre scripts når en ny sang kommer
-    // -----------------------------------------------------------------
-    /// <summary>
-    /// Tilføjer et nyt (song, maker)‑par. Gammel data rykkes ned.
-    /// </summary>
-    public void AddSong(string song, string maker)
+    private SavedSongsData savedSongsData;
+    private List<GameObject> songObjects;
+    private List<Text> songNameFields;
+    private List<Text> makerFields;
+
+    private void Start()
     {
-        // 1. Indsæt øverst
-        history.Insert(0, new SongEntry { song = song, maker = maker });
-
-        // 2. Hold kun de seneste 5
-        if (history.Count > 5) history.RemoveAt(5);
-
-        // 3. Gem til disk og opdatér UI
-        SaveHistory();
-        UpdateUI();
+        InitializeReferences();
+        LoadSavedSongs();
+        UpdateSongDisplay();
     }
 
-    // -----------------------------------------------------------------
-    // 4️⃣ UI‑opdatering
-    // -----------------------------------------------------------------
-    private void UpdateUI()
+    private void InitializeReferences()
     {
-        // Nulstil alt for at undgå “null reference” hvis du har færre end 5
-        for (int i = 0; i < 5; i++)
+        songObjects = new List<GameObject> { B1, B2, B3, B4, B5 };
+        songNameFields = new List<Text> { SONG1, SONG2, SONG3, SONG4, SONG5 };
+        makerFields = new List<Text> { MAKER1, MAKER2, MAKER3, MAKER4, MAKER5 };
+
+        foreach (var songObj in songObjects)
         {
-            if (songTexts[i] != null) songTexts[i].text = "";
-            if (makerTexts[i] != null) makerTexts[i].text = "";
-        }
-
-        // Fyld de felter, vi har data til
-        for (int i = 0; i < history.Count; i++)
-        {
-            if (songTexts[i] != null) songTexts[i].text = history[i].song;
-            if (makerTexts[i] != null) makerTexts[i].text = history[i].maker;
+            if (songObj != null)
+                songObj.SetActive(false);
         }
     }
 
-    // -----------------------------------------------------------------
-    // 5️⃣ Gem / indlæs JSON‑fil (samme mekanik som din gamle Score‑klasse)
-    // -----------------------------------------------------------------
-    private void SaveHistory()
+    public void SaveSong(string songName, string makerName)
     {
-        string path = Path.Combine(Application.persistentDataPath, fileName);
-        string json = JsonUtility.ToJson(new Wrapper { list = history }, true);
-        File.WriteAllText(path, json);
-        //Debug.Log($"SongHistory gemt til: {path}");
+        SongData newSong = new SongData
+        {
+            songName = songName,
+            makerName = makerName,
+            saveDate = System.DateTime.Now
+        };
+
+        savedSongsData.songs.Insert(0, newSong);
+
+        if (savedSongsData.songs.Count > 5)
+        {
+            savedSongsData.songs.RemoveAt(5);
+        }
+
+        SaveSongsToFile();
+        UpdateSongDisplay();
     }
 
-    private void LoadHistory()
+    private void UpdateSongDisplay()
     {
-        string path = Path.Combine(Application.persistentDataPath, fileName);
-        if (File.Exists(path))
+        int songCount = savedSongsData.songs.Count;
+
+        if (welcomeObject != null)
         {
-            string json = File.ReadAllText(path);
-            Wrapper wrapper = JsonUtility.FromJson<Wrapper>(json);
-            history = wrapper.list ?? new List<SongEntry>();
-            //Debug.Log($"SongHistory indlæst fra: {path}");
+            welcomeObject.SetActive(songCount == 0);
+        }
+
+        for (int i = 0; i < songObjects.Count; i++)
+        {
+            if (songObjects[i] != null)
+            {
+                bool shouldBeActive = i < songCount;
+                songObjects[i].SetActive(shouldBeActive);
+
+                if (shouldBeActive && i < savedSongsData.songs.Count)
+                {
+                    if (songNameFields[i] != null)
+                        songNameFields[i].text = savedSongsData.songs[i].songName;
+                    if (makerFields[i] != null)
+                        makerFields[i].text = savedSongsData.songs[i].makerName;
+                }
+                else
+                {
+                    if (songNameFields[i] != null)
+                        songNameFields[i].text = "";
+                    if (makerFields[i] != null)
+                        makerFields[i].text = "";
+                }
+            }
+        }
+    }
+
+    public List<SongData> GetSavedSongs()
+    {
+        return new List<SongData>(savedSongsData.songs);
+    }
+
+    public void RemoveSong(int index)
+    {
+        if (index >= 0 && index < savedSongsData.songs.Count)
+        {
+            savedSongsData.songs.RemoveAt(index);
+            SaveSongsToFile();
+            UpdateSongDisplay();
+        }
+    }
+
+    public void ClearAllSongs()
+    {
+        savedSongsData.songs.Clear();
+        SaveSongsToFile();
+        UpdateSongDisplay();
+    }
+
+    private void SaveSongsToFile()
+    {
+        string fullPath = Path.Combine(Application.persistentDataPath, saveFile);
+        string json = JsonUtility.ToJson(savedSongsData, true);
+        File.WriteAllText(fullPath, json);
+    }
+
+    private void LoadSavedSongs()
+    {
+        string fullPath = Path.Combine(Application.persistentDataPath, saveFile);
+
+        if (File.Exists(fullPath))
+        {
+            string json = File.ReadAllText(fullPath);
+            savedSongsData = JsonUtility.FromJson<SavedSongsData>(json);
         }
         else
         {
-            // Ingen fil – start med tom liste
-            history = new List<SongEntry>();
+            savedSongsData = new SavedSongsData();
         }
     }
 
-    // JsonUtility kan ikke (direkte) serialisere List<T> – vi bruger en wrapper‑klasse.
-    [System.Serializable]
-    private class Wrapper
+    public void SaveCurrentSong(string songName, string makerName)
     {
-        public List<SongEntry> list;
+        if (!string.IsNullOrEmpty(songName) && !string.IsNullOrEmpty(makerName))
+        {
+            SaveSong(songName, makerName);
+        }
     }
 
-    // -----------------------------------------------------------------
-    // 6️⃣ Eksempel‑metode: kaldes fra en anden komponent (valgfri)
-    // -----------------------------------------------------------------
-    /// <summary>
-    /// Eksempel på, hvordan du fra et andet script kan give en ny sang.
-    /// </summary>
-    public void DemoAddFromExternal()
+    public void TestSaveSong()
     {
-        // “Extern kilde” – du kan erstatte dette med f.eks. en web‑request.
-        string nySong = "My New Song";
-        string nyMaker = "Cool Artist";
+        SaveSong("Test Sang " + System.DateTime.Now.ToString("HH:mm:ss"), "Test Kunstner");
+    }
 
-        AddSong(nySong, nyMaker);
+    public void TestMultipleSongs()
+    {
+        SaveSong("Nyeste Sang", "Ny Kunstner");
+        SaveSong("Mellem Sang", "Mellem Kunstner"); 
+        SaveSong("Ældste Sang", "Gammel Kunstner");
     }
 }

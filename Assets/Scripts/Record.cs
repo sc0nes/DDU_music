@@ -7,7 +7,7 @@ public class RecordAudio : MonoBehaviour
     private AudioClip recordedClip;
 
     private string directoryPath => Path.Combine(Application.persistentDataPath, "Recordings");
-    private string fileName => "recording.wav";
+    private string fileName => "recording.mp3";
     private string FullPath => Path.Combine(directoryPath, fileName);
 
 
