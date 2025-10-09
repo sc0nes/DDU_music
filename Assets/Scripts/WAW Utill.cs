@@ -19,9 +19,9 @@ public static class WavUtility
 
     public static void Save(string filePath, AudioClip clip)
     {
-        if (!filePath.ToLower().EndsWith(".mp3"))
+        if (!filePath.ToLower().EndsWith(".wav"))
         {
-            filePath += ".mp3";
+            filePath += ".wav";
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(filePath));
