@@ -340,7 +340,6 @@ public class DataBaseManager
 
     public static List<(int songID, int dbOffset)> lookupHash(long hash)
     {
-        //todo use allFingerprints to get the songID and dbOffset
         allFingerprints.TryGetValue(hash, out List<(int, int)> matches);
         if (matches == null) matches = new List<(int, int)>();
         return matches; 

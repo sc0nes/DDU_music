@@ -119,7 +119,7 @@ public class FileHandler
         Console.WriteLine($"Sample rate: {reader.WaveFormat.SampleRate}, " +
                             $"Channels: {reader.WaveFormat.Channels}, " +
                             $"BitsPerSample: {reader.WaveFormat.BitsPerSample}, " +
-                            $"Duration: {reader.TotalTime}, " +
+                            //$"Duration: {reader.TotalTime}, " +
                             $"Volume: {reader.Volume}");
         return samples;
     }

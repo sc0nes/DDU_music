@@ -13,6 +13,7 @@ using System.Data.SqlTypes;
 using shascam.DatabaseManagers;
 using System.Diagnostics;
 using System.Data.SQLite;
+using shascam;
 
 //Console.WriteLine("Hello, ");
 
@@ -29,30 +30,15 @@ class Programio
         DataBaseManager.LoadFingerprintsIntoMemory(); //this is very important, do not delete
 
         // generelle kodestruktur her følger https://www.royvanrijn.com/blog/2010/06/creating-shazam-in-java/
-        /*string filePath = "test.wav";
-        
-        bool flowControl = shascam.FileHandler.FindCorrectPath(out filePath, filePath);
-        if (!flowControl)
-        {
-            return;
-        }*/
-        //sampling
-        //Console.WriteLine("22");
-        //float[] samples = shascam.FileHandler.LoadWav(filePath); 
 
 
         //FillDB(); //should take 30 minutes to run
         //BatchFillDB(); //should take 5 minutes to run
-
-        int i = IdentifySong("./1006.WAV");
-        Console.WriteLine(i);
+        FileHandler.FindCorrectPath(out string filePath, "1009");
+        int i = IdentifySong(filePath);
+        //Console.WriteLine(i);
         string str = DataBaseManager.GetSongNameFromID(i);
         Console.WriteLine(str);
-        
-        
-
-        //WindowPartitioning(samples);
-
     }
 
     private static void FillDB()
@@ -106,70 +92,92 @@ class Programio
 
     private static List<long> WindowPartitioning(float[] samples, out List<int> offsets)
     {
-        offsets = new List<int>();
-        
-        List<long> hashes = new List<long>();
-        for (int offset = 0; offset < samples.Length - windowSize; offset += windowSize) // probably buggy
+        int step = windowSize / 2;
+        int windowCount = (samples.Length - windowSize + step - 1) / step; // ceil division
+        offsets = new List<int>(windowCount);
+        List<long> hashes = new List<long>(windowCount);
+
+        // Preallocate arrays for parallel writes
+        int[] offsetArray = new int[windowCount];
+        long[] hashArray = new long[windowCount];
+
+        ParallelOptions options = new ParallelOptions { MaxDegreeOfParallelism = 4 };
+
+        Parallel.For(0, windowCount, options, i =>
         {
-            offsets.Add(offset);
+            int offset = i * step;
+            offsetArray[i] = offset;
+
             double[] window = new double[windowSize];
             var complex = new System.Numerics.Complex[windowSize];
-            for (int i = 0; i < windowSize; i++)
+            for (int j = 0; j < windowSize; j++)
             {
-                window[i] = samples[offset + i];
-                complex[i] = new System.Numerics.Complex(window[i], 0);
+                window[j] = samples[offset + j];
+                complex[j] = new System.Numerics.Complex(window[j], 0);
             }
+
             Fourier.Forward(complex, FourierOptions.Matlab);
 
-            double[] ampl = new double[windowSize / 2]; // half become imaginary, we only want the reals
-            for (int i = 0; i < windowSize / 2; i++)
+            double[] ampl = new double[windowSize / 2];
+            for (int j = 0; j < windowSize / 2; j++)
             {
-                ampl[i] = complex[i].Magnitude;
+                ampl[j] = complex[j].Magnitude;
             }
 
-            long hash = Algorithm.shascam(ampl);
+            hashArray[i] = Algorithm.shascam(ampl);
+        });
 
-            hashes.Add(hash);
-        }
+        // Copy preallocated arrays into output lists
+        offsets.AddRange(offsetArray);
+        hashes.AddRange(hashArray);
+
         return hashes;
     }
+
     public static int IdentifySong(string path)
     {
         float[] samples = shascam.FileHandler.SampleWav(path);
         List<long> hashes = WindowPartitioning(samples, out List<int> offsets);
 
-        var votes = new Dictionary<(int songID, int delta), int>(); //the hash is stored as a long
-
+        var chains = new Dictionary<(int songID, int delta), int>();
+        var bestChain = new Dictionary<int, int >();
         for (int i = 0; i < hashes.Count; i++)
         {
             long currentHash = hashes[i];
-            int currentOffset = i * 50;
+            int currentOffset = offsets[i];
             //Console.WriteLine(" Offset: " + currentOffset);
 
             var matches = DataBaseManager.lookupHash(currentHash); //you have to load the db into RAM for this function to work btw
+
+            
 
             foreach (var (songID, dbOffset) in matches)
             {
                 int delta = dbOffset - currentOffset;
                 var key = (songID, delta);
 
-                if (!votes.ContainsKey(key))
-                    votes[key] = 0;
+                if (!chains.ContainsKey(key))
+                    chains[key] = 0;
 
-                votes[key]++;
+                chains[key]++;
+
+                if (!bestChain.ContainsKey(songID) || chains[key] > bestChain[songID])
+                    bestChain[songID] = chains[key];
             }
+
         }
         int bestSongID = -1;
         int maxVotes = 0;
-        Debug_the_thing(votes);
+        //Debug_the_thing(votes);
 
-        foreach (var vote in votes)
+        foreach (var vote in bestChain)
         {
+            Console.WriteLine("vote songID: " + vote.Key + " vote longest chain: " + vote.Value);
             if (vote.Value > maxVotes)
             {
-                bestSongID = vote.Key.songID;
+                bestSongID = vote.Key;
                 maxVotes = vote.Value;
-
+                Console.WriteLine("Song: " + DataBaseManager.GetSongNameFromID(bestSongID) + " value: " + maxVotes);
             }
         }
         return bestSongID;
@@ -181,8 +189,10 @@ class Programio
         {
             var key = kvp.Key;   // (songID, delta)
             var count = kvp.Value;
-            if (count >= 2)
-                Console.WriteLine($"SongID: {key.songID}, Delta: {key.delta}, Votes: {count}");
+            //int max = -1;
+            //if (count >= 4)
+            //    Console.WriteLine($"SongID: {key.songID}, Delta: {key.delta}, Votes: {count}");
+
         }
     }
 

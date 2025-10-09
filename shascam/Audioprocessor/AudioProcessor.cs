@@ -17,13 +17,12 @@ public class AudioProcessor
         {
             Environment.SetEnvironmentVariable("PATH", ffmpegFolder + Path.PathSeparator + oldPath);
         }
-        // Use FFMpeg to convert mp3 to wav
         FFMpegArguments
             .FromFileInput(inputPath)
             .OutputToFile(outputPath, true, options => options
                 .WithAudioCodec("pcm_s16le")
                 .WithAudioSamplingRate(48000)
-                .WithCustomArgument("-af afftdn")
+                .WithCustomArgument("-af afftdn") //denoiser
                 )
             .ProcessSynchronously();
             

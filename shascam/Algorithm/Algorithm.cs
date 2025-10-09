@@ -45,7 +45,7 @@ public class Algorithm
         File.AppendAllText(path, "End\n");
     }
 
-    private static readonly int FUZ_FACTOR = 8;
+    private static readonly int FUZ_FACTOR = 12;
     private static long hash(String line) { // found from the java implementation
         String[] p = line.Split("\t");
         long p1 = long.Parse(p[0]);
