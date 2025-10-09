@@ -27,4 +27,11 @@ It is a song recognition tool that takes a melody or someone's imitation and tri
 ```diff
 - Error: Quality not found
 + this is a great project with my friends
+
+
 >>>>>>> 2d5cbe0402fd1cbc72dcf13ff4d4f216ecb7bee8
+
+
+
+
+https://github.com/user-attachments/assets/25736d2c-a7b6-4d12-8778-49697021bbca
