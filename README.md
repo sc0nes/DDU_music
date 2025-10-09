@@ -32,7 +32,3 @@ It is a song recognition tool that takes a melody or someone's imitation and tri
 >>>>>>> 2d5cbe0402fd1cbc72dcf13ff4d4f216ecb7bee8
 
 
-
-https://github.com/user-attachments/assets/aa7474fb-ee2c-460b-ad7b-a30f9713e143
-
-
