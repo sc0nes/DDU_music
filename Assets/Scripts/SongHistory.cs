@@ -12,15 +12,13 @@ public class SongManager : MonoBehaviour
 
     private const string saveFile = "saved_songs.json";
 
-    [System.Serializable]
     public class SongData
-    {
+    {//vores ting vi kan gemme
         public string songName;
         public string makerName;
         public System.DateTime saveDate;
     }
 
-    [System.Serializable]
     private class SavedSongsData
     {
         public List<SongData> songs = new List<SongData>();
@@ -30,15 +28,15 @@ public class SongManager : MonoBehaviour
     private List<GameObject> songObjects;
     private List<Text> songNameFields;
     private List<Text> makerFields;
-
+//start at programmer kalder
     private void Start()
     {
-        InitializeReferences();
+        referrence();
         LoadSavedSongs();
         UpdateSongDisplay();
     }
 
-    private void InitializeReferences()
+    private void referrence()
     {
         songObjects = new List<GameObject> { B1, B2, B3, B4, B5 };
         songNameFields = new List<Text> { SONG1, SONG2, SONG3, SONG4, SONG5 };
@@ -57,7 +55,6 @@ public class SongManager : MonoBehaviour
         {
             songName = songName,
             makerName = makerName,
-            saveDate = System.DateTime.Now
         };
 
         savedSongsData.songs.Insert(0, newSong);
@@ -110,23 +107,6 @@ public class SongManager : MonoBehaviour
         return new List<SongData>(savedSongsData.songs);
     }
 
-    public void RemoveSong(int index)
-    {
-        if (index >= 0 && index < savedSongsData.songs.Count)
-        {
-            savedSongsData.songs.RemoveAt(index);
-            SaveSongsToFile();
-            UpdateSongDisplay();
-        }
-    }
-
-    public void ClearAllSongs()
-    {
-        savedSongsData.songs.Clear();
-        SaveSongsToFile();
-        UpdateSongDisplay();
-    }
-
     private void SaveSongsToFile()
     {
         string fullPath = Path.Combine(Application.persistentDataPath, saveFile);
@@ -162,10 +142,4 @@ public class SongManager : MonoBehaviour
         SaveSong("Test Sang " + System.DateTime.Now.ToString("HH:mm:ss"), "Test Kunstner");
     }
 
-    public void TestMultipleSongs()
-    {
-        SaveSong("Nyeste Sang", "Ny Kunstner");
-        SaveSong("Mellem Sang", "Mellem Kunstner"); 
-        SaveSong("Ældste Sang", "Gammel Kunstner");
-    }
 }
